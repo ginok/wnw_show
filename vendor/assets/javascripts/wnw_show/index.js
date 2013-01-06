@@ -1,2 +1,2 @@
-//= require images_path
-//= require main
+//= require ./images_path
+//= require ./main
