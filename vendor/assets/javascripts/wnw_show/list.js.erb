@@ -1,0 +1,375 @@
+// jQueryに naturalWidth() と naturalHeight()を追加する
+(function($){
+    var props = ['Width', 'Height'],prop;
+    while (prop = props.pop()) {
+       (function (natural, prop) {
+           $.fn[natural] = (natural in new Image()) ?
+               function () {return this[0][natural];} :
+           function () {
+               var node = this[0],img,value;
+              if (node.tagName.toLowerCase() === 'img') {
+                  img = new Image();
+                img.src = node.src,value = img[prop];
+              }
+              return value;
+          };
+       }('natural' + prop, prop.toLowerCase()));
+   }
+}(jQuery));
+
+var wnw;
+if (!wnw) wnw = {};
+if (!wnw.list) wnw.list = {};
+(function(){
+    //定数
+    var LEFT_MARGIN = 50; //左のマージン
+    var TOP_MARGIN = 200; //上のマージン
+    var Y_SPAN = 300; //写真の縦の間隔
+    var ROW_NO = 4; //写真の列数
+    var SQEW_SPAN = 50; //写真の配置のゆがみ
+    var ROTATE_DEGREE = 2; //画像の傾き角度の最大値
+    var PHOTO_DEL_Y = 500;//画像が消えるときに移動するY方向
+    var PHOTO_DEL_X_SPAN = 100;//画像が消えるときに移動するX方向の幅
+    var PIN_TOP = -10; //ピンが写真のトップからx方向にどれだけずれているか
+    var PIN_DEL_Y = -200;//ピンが消えるときに移動するY方向
+    var PIN_DEL_X_SPAN = -100;//ピンが消えるときに移動するX方向の幅
+    var ADD_IMAGE_RANGE_X = 1000;//画像が追加されるときのX座標の範囲
+    var ADD_IMAGE_RANGE_Y = 0;//画像が追加されるときのY座標の範囲
+    var ZOOM_TIME = 100;//画像が拡大する時の時間[ms]
+    var PIN_IMAGE_PREFIX = "/images/pin-";//ピン画像の接頭辞
+    var PIN_IMAGE_SURFIX = ".png"; //ピン画像の接尾辞
+    var SOUND_FILE = "/sounds/SoundUnit.swf";//ピンが抜ける音
+    var SOUND_CODEBASE = "/sounds/swflash.cab";//音の再生
+    var SEITON_BTN_IMAGE = "<%= asset_path('wnw_show/list/seiton.png') %>";//整頓ボタン画像
+    var DELETE_BTN_IMAGE =  "<%= asset_path('wnw_show/list/delete.png') %>";//削除ボタン画像
+    var BACKGROUND_IMAGE = "<%= asset_path('wnw_show/list/bord.jpg') %>";//背景画像
+    var LOADING_IMAGE = "<%= asset_path('wnw_show/list/loading.gif') %>";//ロード中画像
+    var DRAG_DISTANCE = 10 ;//これ以上座標を動かすとドラックとみなす
+    //変数
+    var gZIndexMax = 2;//現在画面で表示されている中で最大のz-Index
+    var gPinList = [];//ピンのjqueryオブジェクトのリスト
+    var gImgList = [];//画像のjqueryオブジェクトのリスト
+    var gMessage = ""; //画面上部に表示されるメッセージ
+    var gImgUrlList; //画像URLのリスト
+    var gZoomImgId = -1;//現在zoom中の画像のID
+    var gNowDragging = false;//現在ドラッグ中かどうか
+    var gContextPath;//このスクリプトが呼ばれるURLコンテキストパス
+
+    // [0,x] の間の乱数を整数で返す
+    function rand1(x){
+        return Math.floor(Math.random() * x );
+    }
+    // [-x,x] の間の乱数を整数で返す
+    function rand2(x){
+        return Math.floor(Math.random() * x * 2 - x);
+    }
+    //音を出す
+    function playSound(){
+	    var div = document.getElementById("SoundUnit");
+	    var innerHTML = '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase=' + gContextPath + SOUND_CODEBASE + ' width="0" height="0" id="SoundUnit"><param name="movie" value="' + gContextPath + SOUND_FILE + '" /><embed loop=false src="' + gContextPath + SOUND_FILE + '" width="0" height="0" name="SoundUnit" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" /></object>';
+	    div.innerHTML = innerHTML;
+    }
+
+    // 画面を表示する
+    // @param
+    //    imgUrlList : 画像のURLのリスト
+    //    msg : 画面上部に表示されるメッセージ
+    //    logoUrl : ロゴのURL
+    //    contextPath : ロードするhtmlのコンテキストパス
+    function display(imgUrlList,msg,logoUrl,contextPath){
+        gContextPath = contextPath;
+        gMessage = msg;
+
+        //背景
+        $("body").css("background","url(" + gContextPath + BACKGROUND_IMAGE+ ")")
+            .append($("<div/>").attr("id","bord"))
+            .append($("<div/>").attr("id","SoundUnit"));
+        //loading
+        var loading = $("<div/>")
+            .attr("id","loading")
+            .css({"border-radius":"10px",
+                  "border" : "solid",
+                  "width" : "300" ,
+                  "height" : "50",
+                  "background-color" : "#ffffff",
+                  "border-color" : "#ffffff",
+                  "z-index" : "100",
+                  "margin" : "0 auto",
+                  "padding" : "10",
+                  "opacity" : "0.8"})
+            .html("<center><font size=5>Now Loading...<span id=loadno></span></font><img src=" + LOADING_IMAGE + "></center>");
+
+        // ロゴ
+        $("#bord").append(
+            $("<img />")
+                .attr("src",logoUrl)
+                .css({
+                    "position" : "absolute",
+                    "top":0,
+                    "left":LEFT_MARGIN,
+                    "width":200,
+                    "height":200,
+                    "z-index":30
+                }));
+
+        //文字
+        $("body").append(
+            $("<div />")
+                .html(gMessage)
+                .css({
+                    "color":"#FFFFFF",
+                    "text-shadow": "0px 0px 10px gray",
+                    "top":35,
+                    "left":250,
+                    "font-size":40,
+                    //    "font-weight": "bold",
+                    "width":1000,
+                    "opacity": 1,
+                    "position":"absolute",
+                    "z-index":255,
+                    "font-family": "wnw_list_font",
+                    "padding":10
+                }));
+
+
+        // 写真
+        gImgUrlList = imgUrlList;
+        viewNextImage();
+
+    };
+
+    // 次の画像の位置を計算して、viewImageを呼び出す。
+    function viewNextImage(){
+        if(gImgList.length == gImgUrlList.length){
+        //次はない
+
+        //削除ボタン箱
+        $("#bord").append(
+            $("<img/>")
+                .attr("id","gomi")
+                .attr("src", DELETE_BTN_IMAGE)
+                .css({"position":"absolute" , "top":10 , "left":1000 , "z-index" :1000})
+                .click(function(){alert("削除したい写真をここにドロップしてください");})
+                .droppable({
+                    drop: function(e,ui) {
+                        if (confirm("メッセージを削除しますか?")){
+                            var img = $("#" + ui.draggable.attr("id"));
+                            // call delete api
+                            var url = img.attr('msg_id');
+                            $.ajax({type: "delete",url: url});
+                            img.css({"display":"none"});
+
+                        }
+                    },
+                    tolerance: "pointer"
+                }));
+
+        //整頓ボタン
+        $("#bord").append(
+            $("<img/>")
+                .attr("src", SEITON_BTN_IMAGE)
+                .css({
+                    "position":"absolute" ,
+                    "top":10 ,
+                    "left":800 ,
+                    "z-index" :1000 })
+                .click(reset));
+        }else{
+            var no = gImgList.length;
+            var url = gImgUrlList[no];
+            //位置計算
+            var top = TOP_MARGIN + Math.floor(no / ROW_NO ) * Y_SPAN;
+            if(no % ROW_NO == 0){ //１列目
+                var left = LEFT_MARGIN;
+            }else{
+                leftside = gImgList[no - 1];
+                var left = leftside.offset().left + leftside.width();
+            }
+            top += rand1(SQEW_SPAN);
+            left += rand1(SQEW_SPAN);
+            var zIndex = rand1(gZIndexMax);
+            viewImage(url,top,left,zIndex,top,left,viewNextImage);
+        }
+    };
+
+    // 画像を表示する
+    //
+    // @param
+    //   url: 画像のURL
+    //   top: 画像のtop
+    //   left: 画像のleft
+    //   zIndex: 画像のz-index
+    //   orgtop: 画像の整列後のtop
+    //   orgleft: 画像の整列後のleft
+    //   callback: 画像がロードされたら呼び出す関数
+    function viewImage(url,top,left,zIndex,orgtop,orgleft,callback){
+        var no = gImgList.length;
+        var img = $("<img />")
+            .addClass("photo")
+            .attr("id","img"+no)
+            .attr("src",url)
+            .attr("orgTop",orgtop)
+            .attr("orgLeft",orgleft)
+            .attr("orgZIndex",zIndex)
+            .attr("pinId","img"+no)
+            .attr("no",no)
+            .attr("msg_id",url)
+            .css({"display":"block",
+                  "position" : "absolute",
+                  "top":top,
+                  "left":left,
+                  "z-index":zIndex,
+                  "-webkit-transform": "rotate(" +  rand2(ROTATE_DEGREE) + "deg)",
+                  "-moz-transform": "rotate(" + rand2(ROTATE_DEGREE) + "deg)"})
+            .click(function(){
+                if (gNowDragging){
+                    //ドラッグの場合はzoomしない
+                    gNowDragging = false;
+                }else{
+                    // Zoom
+                    if(gZoomImgId == -1 ){
+                        //Zoomしていない時はZoom
+                        if($(window).width() > $(window).height()){
+                            var ratio = 1.0 *  $(window).height() / $(this).height();
+                            var zLeft = $("body").scrollLeft() + $(window).width()/2
+                                - $(this).width()
+                                * ( $(window).height() / $(this).height() )
+                                / 2 ;
+                            var zTop = $("body").scrollTop();
+                        }else{
+                            var ratio = 1.0 * $(window).width() / $(this).width();
+                            var zTop = $("body").scrollTop() + $(window).height()/2
+                                - $(this).height()
+                                * ( $(window).width() / $(this).width() )
+                                / 2 ;
+                            var zLeft = $("body").scrollLeft();
+                        }
+                        $(this)
+                            .attr("beforeLeft",$(this).offset().left)
+                            .attr("beforeTop",$(this).offset().top)
+                            .attr("beforeZIndex",$(this).css("z-index"))
+                            .animate({"display":"block",
+                                      "position" : "absolute",
+                                      "top": zTop,
+                                      "left": zLeft,
+                                         "height" : $(this).naturalHeight() * ratio,
+                                         "width" : $(this).naturalWidth() * ratio,
+                                         "z-index": gZIndexMax + 1
+                                        },ZOOM_TIME);
+                        gZoomImgId=$(this).attr("id");
+                    }else{
+                        //Zoom中は元の位置に戻す
+                        zoomImg=$("#" + gZoomImgId);
+                        zoomImg.animate({
+                            "height" :  zoomImg.naturalHeight(),
+                            "width" :  zoomImg.naturalWidth(),
+                            "left" :  zoomImg.attr("beforeLeft"),
+                            "top" :  zoomImg.attr("beforeTop"),
+                            "z-index" : zoomImg.attr("beforeZIndex")
+                        },ZOOM_TIME);
+                        gZoomImgId = -1;
+                    };
+                };
+            })
+            .draggable({
+                distance : DRAG_DISTANCE,
+                start: function(e,ui){
+                    gNowDragging = true;
+                    // move photo
+                    $(this).css({"z-index":++gZIndexMax});
+                    // hide pin
+                    $("#pin" + $(this).attr("no")).css({"opacity":0});
+                },
+                stop: function(e,ui){
+                    // show pin
+                    $("#pin" + $(this).attr("no"))
+                        .css({"top": ui.position.top + PIN_TOP ,
+                              "left" : ui.position.left + $(this).width()/2,
+                              "opacity":1,
+                              "z-index":++gZIndexMax});
+                }
+            })
+            .load(function(){
+                //pin
+                var pin=$("<img />")
+                        .attr("id","pin"+no)
+                        .attr("img_id","img"+no)
+                        .attr("orgTop",orgtop + PIN_TOP)
+                        .attr("orgLeft",orgleft + img.width()/2)
+                        .attr("orgZIndex",zIndex)
+                        .attr("msg_id",img.attr("id"))
+                        .attr("src", "<%= asset_path('wnw_show/list/pin-3.png') %>")
+//gContextPath + PIN_IMAGE_PREFIX +
+                           //Math.floor(Math.random() * 9) + PIN_IMAGE_SURFIX)
+                        .css({"position" : "absolute",
+                              "top": top + PIN_TOP,
+                              "left": left + img.width()/2,
+                              "z-index":zIndex})
+                        .click(function(){
+                            // start sound
+                            playSound();
+                            //playPinSound_list();
+                            // face out pin animation
+                            $(this).animate({"top": $(this).offset().top + PIN_DEL_Y ,
+                                             "left": $(this).offset().left + rand2(PIN_DEL_X_SPAN),
+                                             "opacity":0});
+                            // drop image animation
+                            var photo = $("#" +$(this).attr('img_id'));
+                            photo.animate({"top":photo.offset().top + PHOTO_DEL_Y ,
+                                           "left":photo.offset().left + rand2(PHOTO_DEL_X_SPAN),
+                                           "opacity":0});
+                        });
+                $("#bord").append(pin);
+                gPinList.push(pin);
+                //callback
+                callback();
+            });
+
+        $("#bord").append(img);
+        gImgList.push(img);
+
+    };
+
+    //画像を追加する
+    // @param
+    //   url : 画像のurl
+    function addImage(url){
+        //整列後の位置を先に計算
+        var no = gImgList.length;
+        var orgtop = TOP_MARGIN + Math.floor(no / ROW_NO ) * Y_SPAN;
+        if(no % ROW_NO == 0){ //１列目
+            var orgleft = LEFT_MARGIN;
+        }else{
+            leftside = gImgList[no - 1];
+            var orgleft = leftside.offset().left + leftside.width();
+        }
+        orgtop += rand1(SQEW_SPAN);
+        orgleft += rand1(SQEW_SPAN);
+        //実際に表示するのはランダムな位置
+        gZIndexMax += 1;
+        viewImage(url, rand1(ADD_IMAGE_RANGE_Y),rand1(ADD_IMAGE_RANGE_X),gZIndexMax,orgtop,orgleft,function(){});
+    };
+
+    //画像を整頓する
+    function reset(){
+        for(i = 0 ; i < gImgList.length ; i = i + 1){
+            gImgList[i].animate({
+                "top":gImgList[i].attr("orgTop"),
+                "left":gImgList[i].attr("orgLeft"),
+                "z-index":gImgList[i].attr("orgZIndex")
+            },500);
+            gPinList[i].animate({
+                "top":gPinList[i].attr("orgTop"),
+                "left":gPinList[i].attr("orgLeft"),
+                "z-index":gPinList[i].attr("orgZIndex")
+            },500);
+        }
+    };
+    //publicフィールド・関数定義
+    wnw.list.display = display;
+    wnw.list.addImage = addImage;
+    wnw.list.reset = reset;
+})();
+
+
+
