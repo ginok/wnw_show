@@ -54,6 +54,21 @@ if (!wnw.list) wnw.list = {};
     var gZoomImgId = -1;//現在zoom中の画像のID
     var gNowDragging = false;//現在ドラッグ中かどうか
     var gContextPath;//このスクリプトが呼ばれるURLコンテキストパス
+    var getPinImgPath = function() {
+      var imgPaths = [
+        "<%= asset_path('wnw_show/list/pin-0.png') %>",
+        "<%= asset_path('wnw_show/list/pin-1.png') %>",
+        "<%= asset_path('wnw_show/list/pin-2.png') %>",
+        "<%= asset_path('wnw_show/list/pin-3.png') %>",
+        "<%= asset_path('wnw_show/list/pin-4.png') %>",
+        "<%= asset_path('wnw_show/list/pin-5.png') %>",
+        "<%= asset_path('wnw_show/list/pin-6.png') %>",
+        "<%= asset_path('wnw_show/list/pin-7.png') %>",
+        "<%= asset_path('wnw_show/list/pin-8.png') %>",
+        "<%= asset_path('wnw_show/list/pin-9.png') %>",
+      ];
+      return imgPaths[Math.floor(Math.random() * 9)]
+    }
 
     // [0,x] の間の乱数を整数で返す
     function rand1(x){
@@ -298,9 +313,7 @@ if (!wnw.list) wnw.list = {};
                         .attr("orgLeft",orgleft + img.width()/2)
                         .attr("orgZIndex",zIndex)
                         .attr("msg_id",img.attr("id"))
-                        .attr("src", "<%= asset_path('wnw_show/list/pin-3.png') %>")
-//gContextPath + PIN_IMAGE_PREFIX +
-                           //Math.floor(Math.random() * 9) + PIN_IMAGE_SURFIX)
+                        .attr("src", getPinImgPath()) %>")
                         .css({"position" : "absolute",
                               "top": top + PIN_TOP,
                               "left": left + img.width()/2,
