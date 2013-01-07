@@ -589,7 +589,7 @@ if (!wnw.show.Tori) wnw.show.Tori = {};
     //音楽再生
     function playSound(){
         //鳥の鳴き声
-      var swfURL = "<%= audio_path 'wnw_show/show/SoundUnit.swf'%>";
+      var swfURL = "<%= asset_path 'wnw_show/show/SoundUnit.swf' %>";
 	    var div = document.getElementById("SoundUnit");
 	    var innerHTML = '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" width="0" height="0" id="SoundUnit"><param name="movie" value="' + swfURL + '" /><embed src="' + swfURL + '" width="0" height="0" name="SoundUnit" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" /></object>';
 	    div.innerHTML = innerHTML;
