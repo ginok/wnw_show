@@ -2,7 +2,6 @@
 // Queue (FIFO)クラス
 //--------------------------------------
 
-console.log(background_img_path)
 function Queue() {  this.list = new Array();};
 Queue.prototype.enqueue = function(a) { this.list.push(a); };
 Queue.prototype.dequeue = function() {
@@ -152,21 +151,21 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         callbackFunction = callback;
         log("callbackFunction:" + callbackFunction);
         log("wnw.show.LibPath:" + wnw.show.libPath());
-        gBacks[0]=new Back(new Position(10,10,1200,750) , background_img_path,0,1);//背景のピンクの四角
-        gBacks[1]=new Back(new Position(61,385,178,495) , env0_img_path,0,1);
-        gBacks[2]=new Back(new Position(277,349,392,435) , env1_img_path,0,1);
-        gBacks[3]=new Back(new Position(430,138,995,563) ,  env2_img_path,0,1);
-        gBacks[4]=new Back(new Position(1024,337,1135,433) ,  env3_img_path,0,1);
-        gBacks[5]=new Back(new Position(234,203,356,302) ,  env4_img_path,0,1);
-        gBacks[6]=new Back(new Position(679,83,760,136) ,  env5_img_path,0,1);
-        gBacks[7]=new Back(new Position(885,40,992,117) ,  env6_img_path,0,1);
-        gBacks[8]=new Back(new Position(125,615,259,680) ,  env7_img_path,0,1);
-        gBacks[9]=new Back(new Position(279,521,374,597) ,  env8_img_path,0,1);
-        gBacks[10]=new Back(new Position(458,602,546,651) ,  env9_img_path,0,1);
-        gBacks[11]=new Back(new Position(602,569,688,641) ,  env10_img_path,0,1);
-        gBacks[12]=new Back(new Position(801,576,917,672) ,  env11_img_path,0,1);
-        gBacks[13]=new Back(new Position(968,641,1070,740) ,  env12_img_path,0,1);
-        gBacks[14]=new Back(new Position(10,10,800,210) , kirakira_img_path,255,1);
+        gBacks[0]=new Back(new Position(10,10,1200,750) , "<%= asset_path('wnw_show/show/background.png') %>",0,1);//背景のピンクの四角
+        gBacks[1]=new Back(new Position(61,385,178,495) , "<%= asset_path('wnw_show/show/env0.gif') %>",0,1);
+        gBacks[2]=new Back(new Position(277,349,392,435) , "<%= asset_path('wnw_show/show/env1.gif') %>",0,1);
+        gBacks[3]=new Back(new Position(430,138,995,563) , "<%= asset_path('wnw_show/show/env2.gif') %>",0,1);
+        gBacks[4]=new Back(new Position(1024,337,1135,433) , "<%= asset_path('wnw_show/show/env3.gif') %>",0,1);
+        gBacks[5]=new Back(new Position(234,203,356,302) , "<%= asset_path('wnw_show/show/env4.gif') %>",0,1);
+        gBacks[6]=new Back(new Position(679,83,760,136) , "<%= asset_path('wnw_show/show/env5.gif') %>",0,1);
+        gBacks[7]=new Back(new Position(885,40,992,117) , "<%= asset_path('wnw_show/show/env6.gif') %>",0,1);
+        gBacks[8]=new Back(new Position(125,615,259,680) ,  "<%= asset_path('wnw_show/show/env7.gif') %>",0,1);
+        gBacks[9]=new Back(new Position(279,521,374,597) , "<%= asset_path('wnw_show/show/env8.gif') %>",0,1);
+        gBacks[10]=new Back(new Position(458,602,546,651) , "<%= asset_path('wnw_show/show/env9.gif') %>",0,1);
+        gBacks[11]=new Back(new Position(602,569,688,641) , "<%= asset_path('wnw_show/show/env10.gif') %>",0,1);
+        gBacks[12]=new Back(new Position(801,576,917,672) , "<%= asset_path('wnw_show/show/env11.gif') %>",0,1);
+        gBacks[13]=new Back(new Position(968,641,1070,740) , "<%= asset_path('wnw_show/show/env12.gif') %>",0,1);
+        gBacks[14]=new Back(new Position(10,10,800,210) , "<%= asset_path('wnw_show/show/kirakira.gif') %>",255,1);
         gBacks[15]=new Back(new Position(430,148,995,563) ,  topImageUrl ,1,1);
         gBacks[16]=new Back(new Position(30,480,300,300) , logoUrl ,255,0.7);
         loadStep1();
@@ -597,8 +596,8 @@ if (!wnw.show.Tori) wnw.show.Tori = {};
 
     function fly(){
         //トリ画像
-        var TORI_IMAGE= wnw.show.libPath() + "/images/tori.png";
-        var NULL_IMAGE = wnw.show.libPath() + "/images/null.gif";
+        var TORI_IMAGE= "<%= asset_path('wnw_show/show/tori.png') %>";
+        var NULL_IMAGE = "<%= asset_path('wnw_show/show/null.gif') %>";
         if (already_init == false){
             $("body")
                 .append($("<img/>")
