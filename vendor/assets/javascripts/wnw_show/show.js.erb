@@ -81,6 +81,12 @@ if (!wnw.show) wnw.show = {};
     function addImg(url){
         wnw.show.Slider.addNewImg(url);
     };
+    var assetPath = function(name) {
+        // for wnw rails environment
+        return "<%= asset_path('wnw_show/show/" + name + "') %>";
+        // for local test
+        // return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+    };
     //publicフィールド・関数定義
     wnw.show.start = start;
     wnw.show.libPath = libPath;
@@ -92,6 +98,7 @@ if (!wnw.show) wnw.show = {};
 //--------------------------------------------------
 if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
 (function(){
+
     function log(str){
         console.log("[wnw.show.InitAnime] " + str);
     };
@@ -151,21 +158,21 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         callbackFunction = callback;
         log("callbackFunction:" + callbackFunction);
         log("wnw.show.LibPath:" + wnw.show.libPath());
-        gBacks[0]=new Back(new Position(10,10,1200,750) , "<%= asset_path('wnw_show/show/background.png') %>",0,1);//背景のピンクの四角
-        gBacks[1]=new Back(new Position(61,385,178,495) , "<%= asset_path('wnw_show/show/env0.gif') %>",0,1);
-        gBacks[2]=new Back(new Position(277,349,392,435) , "<%= asset_path('wnw_show/show/env1.gif') %>",0,1);
-        gBacks[3]=new Back(new Position(430,138,995,563) , "<%= asset_path('wnw_show/show/env2.gif') %>",0,1);
-        gBacks[4]=new Back(new Position(1024,337,1135,433) , "<%= asset_path('wnw_show/show/env3.gif') %>",0,1);
-        gBacks[5]=new Back(new Position(234,203,356,302) , "<%= asset_path('wnw_show/show/env4.gif') %>",0,1);
-        gBacks[6]=new Back(new Position(679,83,760,136) , "<%= asset_path('wnw_show/show/env5.gif') %>",0,1);
-        gBacks[7]=new Back(new Position(885,40,992,117) , "<%= asset_path('wnw_show/show/env6.gif') %>",0,1);
-        gBacks[8]=new Back(new Position(125,615,259,680) ,  "<%= asset_path('wnw_show/show/env7.gif') %>",0,1);
-        gBacks[9]=new Back(new Position(279,521,374,597) , "<%= asset_path('wnw_show/show/env8.gif') %>",0,1);
-        gBacks[10]=new Back(new Position(458,602,546,651) , "<%= asset_path('wnw_show/show/env9.gif') %>",0,1);
-        gBacks[11]=new Back(new Position(602,569,688,641) , "<%= asset_path('wnw_show/show/env10.gif') %>",0,1);
-        gBacks[12]=new Back(new Position(801,576,917,672) , "<%= asset_path('wnw_show/show/env11.gif') %>",0,1);
-        gBacks[13]=new Back(new Position(968,641,1070,740) , "<%= asset_path('wnw_show/show/env12.gif') %>",0,1);
-        gBacks[14]=new Back(new Position(10,10,800,210) , "<%= asset_path('wnw_show/show/kirakira2.gif') %>",255,1);
+        gBacks[0]=new Back(new Position(10,10,1200,750) , wnw.show.assetPath('background.png'),0,1);//背景のピンクの四角
+        gBacks[1]=new Back(new Position(61,385,178,495) , wnw.show.assetPath('env0.gif'),0,1);
+        gBacks[2]=new Back(new Position(277,349,392,435) , wnw.show.assetPath('env1.gif'),0,1);
+        gBacks[3]=new Back(new Position(430,138,995,563) , wnw.show.assetPath('env2.gif'),0,1);
+        gBacks[4]=new Back(new Position(1024,337,1135,433) , wnw.show.assetPath('env3.gif'),0,1);
+        gBacks[5]=new Back(new Position(234,203,356,302) , wnw.show.assetPath('env4.gif'),0,1);
+        gBacks[6]=new Back(new Position(679,83,760,136) , wnw.show.assetPath('env5.gif'),0,1);
+        gBacks[7]=new Back(new Position(885,40,992,117) , wnw.show.assetPath('env6.gif'),0,1);
+        gBacks[8]=new Back(new Position(125,615,259,680) ,  wnw.show.assetPath('env7.gif'),0,1);
+        gBacks[9]=new Back(new Position(279,521,374,597) , wnw.show.assetPath('env8.gif'),0,1);
+        gBacks[10]=new Back(new Position(458,602,546,651) , wnw.show.assetPath('env9.gif'),0,1);
+        gBacks[11]=new Back(new Position(602,569,688,641) , wnw.show.assetPath('env10.gif'),0,1);
+        gBacks[12]=new Back(new Position(801,576,917,672) , wnw.show.assetPath('env11.gif'),0,1);
+        gBacks[13]=new Back(new Position(968,641,1070,740) , wnw.show.assetPath('env12.gif'),0,1);
+        gBacks[14]=new Back(new Position(10,10,800,210) , wnw.show.assetPath('kirakira2.gif'),255,1);
         gBacks[15]=new Back(new Position(430,148,995,563) ,  topImageUrl ,1,1);
         gBacks[16]=new Back(new Position(30,480,300,300) , logoUrl ,255,0.7);
         loadStep1();
@@ -588,7 +595,7 @@ if (!wnw.show.Tori) wnw.show.Tori = {};
     //音楽再生
     function playSound(){
         //鳥の鳴き声
-      var swfURL = "<%= asset_path 'wnw_show/show/SoundUnit.swf' %>";
+      var swfURL = wnw.show.assetPath('SoundUnit.swf');
 	    var div = document.getElementById("SoundUnit");
 	    var innerHTML = '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" width="0" height="0" id="SoundUnit"><param name="movie" value="' + swfURL + '" /><embed src="' + swfURL + '" width="0" height="0" name="SoundUnit" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" /></object>';
 	    div.innerHTML = innerHTML;
@@ -596,8 +603,8 @@ if (!wnw.show.Tori) wnw.show.Tori = {};
 
     function fly(){
         //トリ画像
-        var TORI_IMAGE= "<%= asset_path('wnw_show/show/tori.png') %>";
-        var NULL_IMAGE = "<%= asset_path('wnw_show/show/null.gif') %>";
+        var TORI_IMAGE= wnw.show.assetPath('tori.png');
+        var NULL_IMAGE = wnw.show.assetPath('null.gif');
         if (already_init == false){
             $("body")
                 .append($("<img/>")
