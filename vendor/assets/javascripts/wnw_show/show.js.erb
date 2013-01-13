@@ -85,12 +85,13 @@ if (!wnw.show) wnw.show = {};
         // for wnw rails environment
         return "<%= asset_path('wnw_show/show/" + name + "') %>";
         // for local test
-        // return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+        // return "/wnw_show/vendor/assets/images/wnw_show/show/" + name;
     };
     //publicフィールド・関数定義
     wnw.show.start = start;
     wnw.show.libPath = libPath;
     wnw.show.addImg = addImg;
+    wnw.show.assetPath = assetPath;
 })();
 
 //--------------------------------------------------
@@ -119,7 +120,7 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         return (this.img.width() >= 24);
     };
     Back.prototype.show = function(){
-        log("view" + this.src);
+        log("show:" + this.src);
         this.img.css({"position" : "absolute",
                       "top":this.position.top,
                       "left":this.position.left,
@@ -129,8 +130,22 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         this.img.animate({"opacity":this.opacity},FADEIN_TIME);
     };
     Back.prototype.hide = function(){
-        log("hide" + this.src);
+        log("hide:" + this.src);
         this.img.animate({"opacity":0},FADEIN_TIME);
+    };
+    Back.prototype.showQuick = function(){
+        log("showQuick:" + this.src);
+        this.img.css({"position" : "absolute",
+                      "top":this.position.top,
+                      "left":this.position.left,
+                      "width":this.position.width,
+                      "height":this.position.height,
+                      "z-index":this.zIndex});
+        this.img.css({"opacity":this.opacity});
+    };
+    Back.prototype.hideQuick = function(){
+        log("hideQuick:" + this.src);
+        this.img.hide();
     };
 
     FADEIN_TIME = 3000;
@@ -151,11 +166,29 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
 
     var gBacks = new Array();
     var callbackFunction ;
+    var gSkip = false;//スキップするかどうか
 
     function start(msg,callback,topImageUrl,logoUrl){
         log("initAnime start");
         typeCharMessage=msg;
         callbackFunction = callback;
+        $("body").append(
+            $("<div/>")
+                .attr("id","skip")
+                .html("click to SKIP")
+                .css({"position":"absolute",
+                      "text-decoration":"underline",
+                      "color" : "#FF8080",
+                      "font-size" : 24,
+                      "top":10,
+                      "left":10,
+                      "z-index":1000})
+                .click(function(){
+                    log("skip");
+                    gSkip=true;
+                    skipInitAnime();
+                })
+        );
         log("callbackFunction:" + callbackFunction);
         log("wnw.show.LibPath:" + wnw.show.libPath());
         gBacks[0]=new Back(new Position(10,10,1200,750) , wnw.show.assetPath('background.png'),0,1);//背景のピンクの四角
@@ -172,9 +205,9 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         gBacks[11]=new Back(new Position(602,569,688,641) , wnw.show.assetPath('env10.gif'),0,1);
         gBacks[12]=new Back(new Position(801,576,917,672) , wnw.show.assetPath('env11.gif'),0,1);
         gBacks[13]=new Back(new Position(968,641,1070,740) , wnw.show.assetPath('env12.gif'),0,1);
-        gBacks[14]=new Back(new Position(10,10,800,210) , wnw.show.assetPath('kirakira2.gif'),255,1);
-        gBacks[15]=new Back(new Position(430,148,995,563) ,  topImageUrl ,1,1);
-        gBacks[16]=new Back(new Position(30,480,300,300) , logoUrl ,255,0.7);
+        gBacks[14]=new Back(new Position(10,10,800,210) , wnw.show.assetPath('kirakira2.gif'),255,1);//左上のキラキラ
+        gBacks[15]=new Back(new Position(430,148,995,563) ,  topImageUrl ,1,1);//最初の写真
+        gBacks[16]=new Back(new Position(30,480,300,300) , logoUrl ,255,0.7);//ロゴ
         loadStep1();
     };
 
@@ -203,7 +236,9 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
     function loadStep2(){
         gBacks[0].show(); // 背景
         gBacks[14].show(); // キラキラ
-        setTimeout(loadStep3,ANIME_SPAN);
+        if( ! gSkip){
+            setTimeout(loadStep3,ANIME_SPAN);
+        }
     };
 
     //封筒がふわっと現れるアニメーション
@@ -212,7 +247,9 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         gBacks[4].show();
         gBacks[7].show();
         gBacks[13].show();
-        setTimeout(loadStep5,ANIME_SPAN);
+        if( ! gSkip){
+            setTimeout(loadStep5,ANIME_SPAN);
+        }
     };
 
     //封筒がふわっと現れるアニメーション
@@ -223,13 +260,18 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         gBacks[6].show();
         gBacks[9].show();
         //    gBacks[8].show();
-        setTimeout(loadStep6,ANIME_SPAN);
+        if( ! gSkip){
+            setTimeout(loadStep6,ANIME_SPAN);
+        }
     };
 
     //写真がふわっと現れるアニメーション
     function loadStep6(){
         gBacks[15].show();//写真
-        setTimeout(loadStep7,ANIME_SPAN);
+        $("#skip").animate({"opacity":0},ANIME_SPAN);
+        if( ! gSkip){
+            setTimeout(loadStep7,ANIME_SPAN);
+        }
     };
 
     //文字表示
@@ -253,22 +295,26 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         $("body").append(typeCharDiv);
         loadStep8(0);
 
-        setTimeout(loadStep9,PHOTO_SPAN);
-
+        if( ! gSkip){
+            setTimeout(loadStep9,PHOTO_SPAN);
+        }
     };
 
     //文字表示のサブ関数。一文字づつ描画
     function loadStep8(counter){
-	    if (counter > typeCharMessage.length){
-		    typeCharDiv.html(typeCharMessage);
-        }else if(typeCharMessage.charAt(counter) == '/'){
-            setTimeout(loadStep8, TYPE_CHAR_NL_TIME, counter+1);
-	    }else{
-            $("#str_div").html(typeCharMessage.substring(0,counter)+TYPE_CHAR_CURSOLE);
-		    setTimeout(loadStep8,TYPE_CHAR_SPEED,counter+1);
-	    }
+        if( ! gSkip){
+	        if (counter > typeCharMessage.length){
+		        typeCharDiv.html(typeCharMessage);
+            }else if(typeCharMessage.charAt(counter) == '/'){
+                setTimeout(loadStep8, TYPE_CHAR_NL_TIME, counter+1);
+            }else{
+                $("#str_div").html(typeCharMessage.substring(0,counter)+TYPE_CHAR_CURSOLE);
+                setTimeout(loadStep8,TYPE_CHAR_SPEED,counter+1);
+	        }
+        }
     };
 
+    //写真を消して、残りの封筒を表示して、コールバックを呼び出す
     function loadStep9(){
         typeCharDiv.animate({"opacity":0},FADEIN_TIME);
         gBacks[15].hide();//写真
@@ -276,9 +322,31 @@ if (!wnw.show.InitAnime) wnw.show.InitAnime = {};
         gBacks[10].show();
         gBacks[11].show();
         gBacks[12].show();
-
         callbackFunction();
     };
+
+
+    //スキップ
+    function skipInitAnime(){
+        $("#skip").hide();
+        $("#str_div").hide();
+        gBacks[1].showQuick();
+        gBacks[2].showQuick();
+        gBacks[3].showQuick();
+        gBacks[4].showQuick();
+        gBacks[5].showQuick();
+        gBacks[6].showQuick();
+        gBacks[7].showQuick();
+        gBacks[8].showQuick();
+        gBacks[9].showQuick();
+        gBacks[10].showQuick();
+        gBacks[11].showQuick();
+        gBacks[12].showQuick();
+        gBacks[13].showQuick();
+        gBacks[15].hideQuick();
+        gBacks[16].showQuick();
+        callbackFunction();
+    }
 
     //public関数の定義
     wnw.show.InitAnime.start = start;
@@ -448,7 +516,7 @@ if (!wnw.show.Slider) wnw.show.Slider = {};
             if(gConList[i].nextDeleteFlag){
                 log("既存キューに追加 " + gConList[i].imgJq.attr("src") );
                 gOldImgJqQueue.enqueue(gConList[i].imgJq);
-                log("古いコンテナ削除");
+                log("古コンテナ削除");
                 gConList.splice(i,1);
             }
         }
