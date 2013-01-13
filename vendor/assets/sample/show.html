@@ -1,0 +1,57 @@
+<html>
+<head>
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <meta http-equiv="Expires" content="Thu, 01 Dec 1994 16:00:00 GMT">
+  <TITLE>Weddin Now Slide Show</TITLE>
+  <SCRIPT type=text/javascript src="http://code.jquery.com/jquery-1.7.2.min.js"></SCRIPT>
+  <script type=text/javascript src="../javascripts/wnw_show/show.js.erb"></script>
+  <script>
+  function init(){
+      //画像のリスト
+      var imageUrlList = [ "image/1.png","image/2.png","image/3.png",
+                           "image/4.png","image/5.png","image/6.png"]
+
+      // メッセージ
+      var message = "AさんBさん結婚おめでとう！<br/>みんなからのメッセージが届いています"
+
+      // ロゴ
+      var logoUrl = "image/logo.png"
+
+      // スライドショーの最初の画像
+      var topImageUrl = "image/top.gif"
+
+      // このライブラリのコンテキストパスを設定する。最後に「/」は入れない
+      // 例) "file:///C:/Users/fetaro/git/wnw_show"
+      // 例) "/js/vendor/wnw_show"
+      var contextPath = "/wnw_show"
+
+      //呼び出し
+      wnw.show.start(imageUrlList, message, contextPath, topImageUrl, logoUrl);
+
+      //30秒後に新規画像投稿
+      //setTimeout(wnw.show.addImg,1000*30,'image/1.png');
+
+      //60秒後に新規画像投稿
+      //setTimeout(wnw.show.addImg,1000*60,'image/2.png');
+
+      //90秒後に新規画像投稿
+      //setTimeout(wnw.show.addImg,1000*90,'image/3.png');
+  };
+  function flyTori(){
+      wnw.show.addImg('image/3.png');
+  };
+  </script>
+  <style type="text/css">
+    /* 独自フォントを使いたければ以下をコメントアウト  */
+    /*
+      @font-face {
+        font-family: wnw_show_font;
+        src: url("fonts/kiloji_b.ttf");
+      }
+    */
+  </style>
+</head>
+<body onLoad=init() />
+<button onclick="flyTori()" style="{position:absolute; top:10px; left:1000px; z-index:256}"><font size=5>fly a bird!</font></button>
+</html>
