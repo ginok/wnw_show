@@ -23,9 +23,9 @@ if (!wnw.list) wnw.list = {};
 (function(){
     var assetPath = function(name) {
         // for wnw rails environment
-        //return "<%= asset_path('wnw_show/list/" + name + "') %>";
+        return "<%= asset_path('wnw_show/list/" + name + "') %>";
         // for local test
-        return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+        //return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
     };
 
     // -------------------------------------
