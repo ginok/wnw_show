@@ -83,9 +83,9 @@ if (!wnw.show) wnw.show = {};
     };
     var assetPath = function(name) {
         // for wnw rails environment
-        return "<%= asset_path('wnw_show/show/" + name + "') %>";
+        //return "<%= asset_path('wnw_show/show/" + name + "') %>";
         // for local test
-        // return "/wnw_show/vendor/assets/images/wnw_show/show/" + name;
+        return "/wnw_show/vendor/assets/images/wnw_show/show/" + name;
     };
     //publicフィールド・関数定義
     wnw.show.start = start;
