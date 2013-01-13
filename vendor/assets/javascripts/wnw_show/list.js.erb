@@ -23,12 +23,15 @@ if (!wnw.list) wnw.list = {};
 (function(){
     var assetPath = function(name) {
         // for wnw rails environment
-        return "<%= asset_path('wnw_show/list/" + name + "') %>";
+        //return "<%= asset_path('wnw_show/list/" + name + "') %>";
         // for local test
-        // return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+        return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
     };
 
-    //定数
+    // -------------------------------------
+    // 定数
+    // -------------------------------------
+
     var LEFT_MARGIN = 50; //左のマージン
     var TOP_MARGIN = 200; //上のマージン
     var Y_SPAN = 300; //写真の縦の間隔
@@ -42,7 +45,7 @@ if (!wnw.list) wnw.list = {};
     var PIN_DEL_X_SPAN = -100;//ピンが消えるときに移動するX方向の幅
     var ADD_IMAGE_RANGE_X = 1000;//画像が追加されるときのX座標の範囲
     var ADD_IMAGE_RANGE_Y = 0;//画像が追加されるときのY座標の範囲
-    var ZOOM_TIME = 100;//画像が拡大する時の時間[ms]
+    var ZOOM_TIME = 300;//画像が拡大する時の時間[ms]
     var PIN_IMAGE_PREFIX = "/images/pin-";//ピン画像の接頭辞
     var PIN_IMAGE_SURFIX = ".png"; //ピン画像の接尾辞
     var SOUND_FILE = "/sounds/SoundUnit.swf";//ピンが抜ける音
@@ -52,7 +55,16 @@ if (!wnw.list) wnw.list = {};
     var BACKGROUND_IMAGE = assetPath('bord.jpg');//背景画像
     var LOADING_IMAGE = assetPath('loading.gif');//ロード中画像
     var DRAG_DISTANCE = 10 ;//これ以上座標を動かすとドラックとみなす
-    //変数
+    var Z_INDEX_LOGO = 0;
+    var Z_INDEX_MESSAGE = 0;
+    var Z_INDEX_BUTTON = 1000;
+    var Z_INDEX_ZOOM = 1001;
+    var Z_INDEX_NEXT_PREV = 1002;
+    var NEXT_BUTTON_ID = "nextButton";
+    var PREV_BUTTON_ID = "prevButton";
+    // -------------------------------------
+    // 変数
+    // -------------------------------------
     var gZIndexMax = 2;//現在画面で表示されている中で最大のz-Index
     var gPinList = [];//ピンのjqueryオブジェクトのリスト
     var gImgList = [];//画像のjqueryオブジェクトのリスト
@@ -61,6 +73,12 @@ if (!wnw.list) wnw.list = {};
     var gZoomImgId = -1;//現在zoom中の画像のID
     var gNowDragging = false;//現在ドラッグ中かどうか
     var gContextPath;//このスクリプトが呼ばれるURLコンテキストパス
+
+    // -------------------------------------
+    // 関数
+    // -------------------------------------
+
+    // ピンの画像のURLをランダムで返す
     var getPinImgPath = function() {
       var imgPaths = [
         assetPath('pin-0.png'),
@@ -92,128 +110,6 @@ if (!wnw.list) wnw.list = {};
 	    div.innerHTML = innerHTML;
     }
 
-    // 画面を表示する
-    // @param
-    //    imgUrlList : 画像のURLのリスト
-    //    msg : 画面上部に表示されるメッセージ
-    //    logoUrl : ロゴのURL
-    //    contextPath : ロードするhtmlのコンテキストパス
-    function display(imgUrlList,msg,logoUrl,contextPath){
-        gContextPath = contextPath;
-        gMessage = msg;
-
-        //背景
-        $("body").css("background","url(" + BACKGROUND_IMAGE+ ")")
-            .append($("<div/>").attr("id","bord"))
-            .append($("<div/>").attr("id","SoundUnit"));
-        //loading
-        var loading = $("<div/>")
-            .attr("id","loading")
-            .css({"border-radius":"10px",
-                  "border" : "solid",
-                  "width" : "300" ,
-                  "height" : "50",
-                  "background-color" : "#ffffff",
-                  "border-color" : "#ffffff",
-                  "z-index" : "100",
-                  "margin" : "0 auto",
-                  "padding" : "10",
-                  "opacity" : "0.8"})
-            .html("<center><font size=5>Now Loading...<span id=loadno></span></font><img src=" + LOADING_IMAGE + "></center>");
-
-        // ロゴ
-        $("#bord").append(
-            $("<img />")
-                .attr("src",logoUrl)
-                .css({
-                    "position" : "absolute",
-                    "top":0,
-                    "left":LEFT_MARGIN,
-                    "width":200,
-                    "height":200,
-                    "z-index":30
-                }));
-
-        //文字
-        $("body").append(
-            $("<div />")
-                .html(gMessage)
-                .css({
-                    "color":"#FFFFFF",
-                    "text-shadow": "0px 0px 10px gray",
-                    "top":35,
-                    "left":250,
-                    "font-size":40,
-                    //    "font-weight": "bold",
-                    "width":1000,
-                    "opacity": 1,
-                    "position":"absolute",
-                    "z-index":255,
-                    "font-family": "wnw_list_font",
-                    "padding":10
-                }));
-
-
-        // 写真
-        gImgUrlList = imgUrlList;
-        viewNextImage();
-
-    };
-
-    // 次の画像の位置を計算して、viewImageを呼び出す。
-    function viewNextImage(){
-        if(gImgList.length == gImgUrlList.length){
-        //次はない
-
-        //削除ボタン箱
-        $("#bord").append(
-            $("<img/>")
-                .attr("id","gomi")
-                .attr("src", DELETE_BTN_IMAGE)
-                .css({"position":"absolute" , "top":10 , "left":1000 , "z-index" :1000})
-                .click(function(){alert("削除したい写真をここにドロップしてください");})
-                .droppable({
-                    drop: function(e,ui) {
-                        if (confirm("メッセージを削除しますか?")){
-                            var img = $("#" + ui.draggable.attr("id"));
-                            // call delete api
-                            var url = img.attr('msg_id');
-                            $.ajax({type: "delete",url: url});
-                            img.css({"display":"none"});
-
-                        }
-                    },
-                    tolerance: "pointer"
-                }));
-
-        //整頓ボタン
-        $("#bord").append(
-            $("<img/>")
-                .attr("src", SEITON_BTN_IMAGE)
-                .css({
-                    "position":"absolute" ,
-                    "top":10 ,
-                    "left":800 ,
-                    "z-index" :1000 })
-                .click(reset));
-        }else{
-            var no = gImgList.length;
-            var url = gImgUrlList[no];
-            //位置計算
-            var top = TOP_MARGIN + Math.floor(no / ROW_NO ) * Y_SPAN;
-            if(no % ROW_NO == 0){ //１列目
-                var left = LEFT_MARGIN;
-            }else{
-                leftside = gImgList[no - 1];
-                var left = leftside.offset().left + leftside.width();
-            }
-            top += rand1(SQEW_SPAN);
-            left += rand1(SQEW_SPAN);
-            var zIndex = rand1(gZIndexMax);
-            viewImage(url,top,left,zIndex,top,left,viewNextImage);
-        }
-    };
-
     // 画像を表示する
     //
     // @param
@@ -229,6 +125,9 @@ if (!wnw.list) wnw.list = {};
         var img = $("<img />")
             .addClass("photo")
             .attr("id","img"+no)
+            .attr("no", no)
+            .attr("nextId", "img"+ (no+1))
+            .attr("prevId", "img"+ (no-1))
             .attr("src",url)
             .attr("orgTop",orgtop)
             .attr("orgLeft",orgleft)
@@ -251,45 +150,12 @@ if (!wnw.list) wnw.list = {};
                     // Zoom
                     if(gZoomImgId == -1 ){
                         //Zoomしていない時はZoom
-                        if($(window).width() > $(window).height()){
-                            var ratio = 1.0 *  $(window).height() / $(this).height();
-                            var zLeft = $("body").scrollLeft() + $(window).width()/2
-                                - $(this).width()
-                                * ( $(window).height() / $(this).height() )
-                                / 2 ;
-                            var zTop = $("body").scrollTop();
-                        }else{
-                            var ratio = 1.0 * $(window).width() / $(this).width();
-                            var zTop = $("body").scrollTop() + $(window).height()/2
-                                - $(this).height()
-                                * ( $(window).width() / $(this).width() )
-                                / 2 ;
-                            var zLeft = $("body").scrollLeft();
-                        }
-                        $(this)
-                            .attr("beforeLeft",$(this).offset().left)
-                            .attr("beforeTop",$(this).offset().top)
-                            .attr("beforeZIndex",$(this).css("z-index"))
-                            .animate({"display":"block",
-                                      "position" : "absolute",
-                                      "top": zTop,
-                                      "left": zLeft,
-                                         "height" : $(this).naturalHeight() * ratio,
-                                         "width" : $(this).naturalWidth() * ratio,
-                                         "z-index": gZIndexMax + 1
-                                        },ZOOM_TIME);
-                        gZoomImgId=$(this).attr("id");
+                        zoom($(this).attr("id"));
                     }else{
                         //Zoom中は元の位置に戻す
-                        zoomImg=$("#" + gZoomImgId);
-                        zoomImg.animate({
-                            "height" :  zoomImg.naturalHeight(),
-                            "width" :  zoomImg.naturalWidth(),
-                            "left" :  zoomImg.attr("beforeLeft"),
-                            "top" :  zoomImg.attr("beforeTop"),
-                            "z-index" : zoomImg.attr("beforeZIndex")
-                        },ZOOM_TIME);
-                        gZoomImgId = -1;
+                        unzoom(gZoomImgId);
+                        $("#" + NEXT_BUTTON_ID).hide();
+                        $("#" + PREV_BUTTON_ID).hide();
                     };
                 };
             })
@@ -344,11 +210,85 @@ if (!wnw.list) wnw.list = {};
                 //callback
                 callback();
             });
-
         $("#bord").append(img);
         gImgList.push(img);
 
     };
+
+    // 画像をズームする
+    // @param
+    //   id : 画像のID
+    function zoom(id){
+        if(gZoomImgId == -1){
+            console.log("zoom:" + id);
+            gZoomImgId = id;
+            var _img = $("#"+ id);
+            //ズームボタン
+            $("#" + NEXT_BUTTON_ID).css({
+                "top":$("body").scrollTop() + $(window).height()/2,
+                "left":$("body").scrollLeft() + $(window).width() - $("#" + NEXT_BUTTON_ID).width()
+            });
+            $("#" + PREV_BUTTON_ID).css({
+                "top":$("body").scrollTop() + $(window).height()/2,
+                "left":$("body").scrollLeft()
+            });
+            if(_img.attr("no") == 0 ){
+                $("#" + NEXT_BUTTON_ID).show();
+                $("#" + PREV_BUTTON_ID).hide();
+            }else if(_img.attr("no") == gImgUrlList.length - 1){
+                $("#" + NEXT_BUTTON_ID).hide();
+                $("#" + PREV_BUTTON_ID).show();
+            }else{
+                $("#" + NEXT_BUTTON_ID).show();
+                $("#" + PREV_BUTTON_ID).show();
+            }
+            //画像
+            if($(window).width() > $(window).height()){//横長
+                var ratio = 1.0 *  $(window).height() / _img.height();
+                var zLeft = $("body").scrollLeft() + $(window).width()/2
+                    - _img.width()
+                    * ( $(window).height() / _img.height() )
+                    / 2 ;
+                var zTop = $("body").scrollTop();
+            }else{//縦長
+                var ratio = 1.0 * $(window).width() / _img.width();
+                var zTop = $("body").scrollTop() + $(window).height()/2
+                    - _img.height()
+                    * ( $(window).width() / _img.width() )
+                    / 2 ;
+                var zLeft = $("body").scrollLeft();
+            }
+            _img.attr("beforeLeft",_img.offset().left)
+                .attr("beforeTop",_img.offset().top)
+                .attr("beforeZIndex",_img.css("z-index"));
+            _img.css({"z-index": Z_INDEX_ZOOM});
+            _img.animate({"display":"block",
+                          "position" : "absolute",
+                          "top": zTop,
+                          "left": zLeft,
+                          "height" : _img.naturalHeight() * ratio,
+                          "width" : _img.naturalWidth() * ratio
+                         },ZOOM_TIME);
+        }
+    };
+
+    // 画像のズームを解除する
+    // @param
+    //   id : 画像のID
+    function unzoom(id){
+        if(gZoomImgId != -1){
+            console.log("unzoom" + id);
+            gZoomImgId = -1;
+            var _img=$("#" + id);
+            _img.animate({
+                "height" :  _img.naturalHeight(),
+                "width" :  _img.naturalWidth(),
+                "left" :  _img.attr("beforeLeft"),
+                "top" :  _img.attr("beforeTop"),
+                "z-index" : _img.attr("beforeZIndex")
+            },ZOOM_TIME);
+        }
+    }
 
     //画像を追加する
     // @param
@@ -370,7 +310,7 @@ if (!wnw.list) wnw.list = {};
         viewImage(url, rand1(ADD_IMAGE_RANGE_Y),rand1(ADD_IMAGE_RANGE_X),gZIndexMax,orgtop,orgleft,function(){});
     };
 
-    //画像を整頓する
+    // 画像を整頓する
     function reset(){
         for(i = 0 ; i < gImgList.length ; i = i + 1){
             gImgList[i].animate({
@@ -385,6 +325,183 @@ if (!wnw.list) wnw.list = {};
             },500);
         }
     };
+
+    // -------------------------------------
+    // メイン処理
+    // -------------------------------------
+
+    // step1. 背景、ロゴ、メッセージを描画する
+    // @param
+    //    imgUrlList : 画像のURLのリスト
+    //    msg : 画面上部に表示されるメッセージ
+    //    logoUrl : ロゴのURL
+    //    contextPath : ロードするhtmlのコンテキストパス
+    function display(imgUrlList,msg,logoUrl,contextPath){
+        gContextPath = contextPath;
+        gMessage = msg;
+
+        //背景
+        $("body").css("background","url(" + BACKGROUND_IMAGE+ ")")
+            .append($("<div/>").attr("id","bord"))
+            .append($("<div/>").attr("id","SoundUnit"));
+        //loading
+            // var loading = $("<div// />")
+            // .attr("id","loading")
+            // .css({"border-radius":"10px",
+            //       "border" : "solid",
+            //       "width" : "300" ,
+            //       "height" : "50",
+            //       "background-color" : "#ffffff",
+            //       "border-color" : "#ffffff",
+            //       "z-index" : "100",
+            //       "margin" : "0 auto",
+            //       "padding" : "10",
+            //       "opacity" : "0.8"})
+            // .html("<center><font size=5>Now Loading...<span id=loadno></span></font><img src=" + LOADING_IMAGE + "></center>");
+
+        // ロゴ
+        $("#bord").append(
+            $("<img />")
+                .attr("src",logoUrl)
+                .css({
+                    "position" : "absolute",
+                    "top":0,
+                    "left":LEFT_MARGIN,
+                    "width":200,
+                    "height":200,
+                    "z-index":Z_INDEX_LOGO
+                }));
+
+        //文字
+        $("body").append(
+            $("<div />")
+                .html(gMessage)
+                .css({
+                    "color":"#FFFFFF",
+                    "text-shadow": "0px 0px 10px gray",
+                    "top":35,
+                    "left":250,
+                    "font-size":40,
+                    //    "font-weight": "bold",
+                    "width":1000,
+                    "opacity": 1,
+                    "position":"absolute",
+                    "z-index":Z_INDEX_MESSAGE,
+                    "font-family": "wnw_list_font",
+                    "padding":10
+                }));
+
+        // 写真
+        gImgUrlList = imgUrlList;
+        viewNextImage();
+
+    };
+
+    // step2. 写真をダウンロードでき次第描画する
+    //
+    // 次の画像の位置を計算して、viewImageを呼び出す。
+    // viewImageで画像の描画が終わったら、コールバックでこの関数を呼び出すので、
+    // 画像がなくなるまでこの関数を繰り返すことになる。
+    // 画像がなくなったらfinishViewImage()を呼ぶ。
+    function viewNextImage(){
+        if(gImgList.length != gImgUrlList.length){
+            var no = gImgList.length;
+            var url = gImgUrlList[no];
+            //位置計算
+            var top = TOP_MARGIN + Math.floor(no / ROW_NO ) * Y_SPAN;
+            if(no % ROW_NO == 0){ //１列目
+                var left = LEFT_MARGIN;
+            }else{
+                leftside = gImgList[no - 1];
+                var left = leftside.offset().left + leftside.width();
+            }
+            top += rand1(SQEW_SPAN);
+            left += rand1(SQEW_SPAN);
+            var zIndex = rand1(gZIndexMax);
+            viewImage(url,top,left,zIndex,top,left,viewNextImage);
+        }else{
+            displayButtons();
+        }
+    };
+
+
+    // step3. 各種ボタンを表示
+    function displayButtons(){
+        //次の画像ボタン
+        $("body").append(
+            $("<img/>")
+                .attr("id",NEXT_BUTTON_ID)
+                .attr("src",assetPath('next.png'))
+                .click(function(){
+                    var _id = $("#" + gZoomImgId).attr("nextId");
+                    console.log("nextZoom:" + gZoomImgId + "->" + _id);
+                    unzoom(gZoomImgId);
+                    zoom(_id);
+                })
+                .css({
+                    "position":"absolute" ,
+                    "opacity":0.5,
+                    "z-index" :Z_INDEX_NEXT_PREV,
+                    "display":"none"})
+
+        );
+
+        //前の画像ボタン
+        $("body").append(
+            $("<img/>")
+                .attr("id",PREV_BUTTON_ID)
+                .attr("src",assetPath('prev.png'))
+                .click(function(){
+                    var _id = $("#" + gZoomImgId).attr("prevId");
+                    console.log("nextZoom:" + gZoomImgId + "->" + _id);
+                    unzoom(gZoomImgId);
+                    zoom(_id);
+                })
+                .css({
+                    "position":"absolute" ,
+                    "opacity":0.5,
+                    "z-index" :Z_INDEX_NEXT_PREV,
+                    "display":"none"})
+
+        );
+
+        //削除ボタン箱
+        $("#bord").append(
+            $("<img/>")
+                .attr("id","gomi")
+                .attr("src", DELETE_BTN_IMAGE)
+                .css({"position":"absolute" ,
+                      "top":10 ,
+                      "left":1000 ,
+                      "z-index" :Z_INDEX_BUTTON})
+                .click(function(){alert("削除したい写真をここにドロップしてください");})
+                .droppable({
+                    drop: function(e,ui) {
+                        if (confirm("メッセージを削除しますか?")){
+                            var img = $("#" + ui.draggable.attr("id"));
+                            // call delete api
+                            var url = img.attr('msg_id');
+                            $.ajax({type: "delete",url: url});
+                            img.css({"display":"none"});
+
+                        }
+                    },
+                    tolerance: "pointer"
+                }));
+
+        //整頓ボタン
+        $("#bord").append(
+            $("<img/>")
+                .attr("src", SEITON_BTN_IMAGE)
+                .css({
+                    "position":"absolute" ,
+                    "top":10 ,
+                    "left":800 ,
+                    "z-index" :Z_INDEX_BUTTON })
+                .click(reset));
+
+    };
+
     //publicフィールド・関数定義
     wnw.list.display = display;
     wnw.list.addImage = addImage;
