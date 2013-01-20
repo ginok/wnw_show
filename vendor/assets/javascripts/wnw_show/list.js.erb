@@ -23,45 +23,61 @@ if (!wnw.list) wnw.list = {};
 (function(){
     var assetPath = function(name) {
         // for wnw rails environment
-        return "<%= asset_path('wnw_show/list/" + name + "') %>";
+        //return "<%= asset_path('wnw_show/list/" + name + "') %>";
         // for local test
-        //return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+        return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
     };
 
     // -------------------------------------
     // 定数
     // -------------------------------------
-
+    var IMAGE_RATIO = 0.6; //画像の拡大サイズ
     var LEFT_MARGIN = 50; //左のマージン
     var TOP_MARGIN = 200; //上のマージン
-    var Y_SPAN = 300; //写真の縦の間隔
+    var Y_SPAN = 250; //写真の縦の間隔
     var ROW_NO = 4; //写真の列数
-    var SQEW_SPAN = 50; //写真の配置のゆがみ
+    var SQEW_SPAN = 30; //写真の配置のゆがみ
     var ROTATE_DEGREE = 2; //画像の傾き角度の最大値
     var PHOTO_DEL_Y = 500;//画像が消えるときに移動するY方向
     var PHOTO_DEL_X_SPAN = 100;//画像が消えるときに移動するX方向の幅
+
     var PIN_TOP = -10; //ピンが写真のトップからx方向にどれだけずれているか
     var PIN_DEL_Y = -200;//ピンが消えるときに移動するY方向
     var PIN_DEL_X_SPAN = -100;//ピンが消えるときに移動するX方向の幅
+    var PIN_WIDTH = 20; //ピンの横幅
+    var PIN_IMAGE_PREFIX = "/images/pin-";//ピン画像の接頭辞
+    var PIN_IMAGE_SURFIX = ".png"; //ピン画像の接尾辞
+
     var ADD_IMAGE_RANGE_X = 1000;//画像が追加されるときのX座標の範囲
     var ADD_IMAGE_RANGE_Y = 0;//画像が追加されるときのY座標の範囲
     var ZOOM_TIME = 300;//画像が拡大する時の時間[ms]
-    var PIN_IMAGE_PREFIX = "/images/pin-";//ピン画像の接頭辞
-    var PIN_IMAGE_SURFIX = ".png"; //ピン画像の接尾辞
     var SOUND_FILE = "/sounds/SoundUnit.swf";//ピンが抜ける音
     var SOUND_CODEBASE = "/sounds/swflash.cab";//音の再生
     var SEITON_BTN_IMAGE = assetPath('seiton.png');//整頓ボタン画像
-    var DELETE_BTN_IMAGE =  assetPath('delete.png');//削除ボタン画像
+    var SEITON_LEFT = 1000;//整頓ボタン画像
+    var SEITON_TOP = 20;//整頓ボタン画像
+    //    var DELETE_BTN_IMAGE =  assetPath('delete.png');//削除ボタン画像
     var BACKGROUND_IMAGE = assetPath('bord.jpg');//背景画像
     var LOADING_IMAGE = assetPath('loading.gif');//ロード中画像
     var DRAG_DISTANCE = 10 ;//これ以上座標を動かすとドラックとみなす
-    var Z_INDEX_LOGO = 0;
-    var Z_INDEX_MESSAGE = 0;
+    var MOJI_Z_INDEX = 0;
     var Z_INDEX_BUTTON = 1000;
     var Z_INDEX_ZOOM = 1001;
     var Z_INDEX_NEXT_PREV = 1002;
     var NEXT_BUTTON_ID = "nextButton";
     var PREV_BUTTON_ID = "prevButton";
+    // ロゴ
+    var LOGO_WIDTH = 140;
+    //var LOGO_HEIGHT = 150;
+    var LOGO_LEFT = 50;
+    var LOGO_TOP = 30;
+    var LOGO_Z_INDEX = 0;
+    // 文字
+    var MOJI_TOP  = 35;
+    var MOJI_LEFT = 200;
+    var MOJI_SIZE = 40;
+    var MOJI_WIDTH= 1000;
+
     // -------------------------------------
     // 変数
     // -------------------------------------
@@ -135,11 +151,13 @@ if (!wnw.list) wnw.list = {};
             .attr("pinId","img"+no)
             .attr("no",no)
             .attr("msg_id",url)
+            .hide()
             .css({"display":"block",
                   "position" : "absolute",
                   "top":top,
                   "left":left,
                   "z-index":zIndex,
+                  "opacity":0,
                   "-webkit-transform": "rotate(" +  rand2(ROTATE_DEGREE) + "deg)",
                   "-moz-transform": "rotate(" + rand2(ROTATE_DEGREE) + "deg)"})
             .click(function(){
@@ -178,6 +196,11 @@ if (!wnw.list) wnw.list = {};
                 }
             })
             .load(function(){
+                $(this).width($(this).naturalWidth() * IMAGE_RATIO);
+                $(this).height($(this).naturalHeight() * IMAGE_RATIO);
+                $(this).attr("orgWidth",$(this).naturalWidth() * IMAGE_RATIO);
+                $(this).attr("orgHeight",$(this).naturalHeight() * IMAGE_RATIO);
+                $(this).css({"opacity":1});
                 //pin
                 var pin=$("<img />")
                         .attr("id","pin"+no)
@@ -190,6 +213,7 @@ if (!wnw.list) wnw.list = {};
                         .css({"position" : "absolute",
                               "top": top + PIN_TOP,
                               "left": left + img.width()/2,
+                              "width" : PIN_WIDTH,
                               "z-index":zIndex})
                         .click(function(){
                             // start sound
@@ -258,16 +282,16 @@ if (!wnw.list) wnw.list = {};
                     / 2 ;
                 var zLeft = $("body").scrollLeft();
             }
-            _img.attr("beforeLeft",_img.offset().left)
-                .attr("beforeTop",_img.offset().top)
-                .attr("beforeZIndex",_img.css("z-index"));
+            _img.attr("orgLeft",_img.offset().left)
+                .attr("orgTop",_img.offset().top)
+                .attr("orgZIndex",_img.css("z-index"));
             _img.css({"z-index": Z_INDEX_ZOOM});
             _img.animate({"display":"block",
                           "position" : "absolute",
                           "top": zTop,
                           "left": zLeft,
-                          "height" : _img.naturalHeight() * ratio,
-                          "width" : _img.naturalWidth() * ratio
+                          "height" : _img.attr("orgHeight") * ratio,
+                          "width" : _img.attr("orgWidth") * ratio
                          },ZOOM_TIME);
         }
     };
@@ -281,11 +305,11 @@ if (!wnw.list) wnw.list = {};
             gZoomImgId = -1;
             var _img=$("#" + id);
             _img.animate({
-                "height" :  _img.naturalHeight(),
-                "width" :  _img.naturalWidth(),
-                "left" :  _img.attr("beforeLeft"),
-                "top" :  _img.attr("beforeTop"),
-                "z-index" : _img.attr("beforeZIndex")
+                "height" :  _img.attr("orgHeight"),
+                "width" :  _img.attr("orgWidth"),
+                "left" :  _img.attr("orgLeft"),
+                "top" :  _img.attr("orgTop"),
+                "z-index" : _img.attr("orgZIndex")
             },ZOOM_TIME);
         }
     }
@@ -304,8 +328,8 @@ if (!wnw.list) wnw.list = {};
             leftside = gImgList[no - 1];
             var orgleft = leftside.offset().left + leftside.width();
         }
-        orgtop += rand1(SQEW_SPAN);
-        orgleft += rand1(SQEW_SPAN);
+        orgtop += rand1(SQEW_SPAN) - SQEW_SPAN/2;
+        orgleft += rand1(SQEW_SPAN) - SQEW_SPAN/2;
         //実際に表示するのはランダムな位置
         gZIndexMax += 1;
         viewImage(url, rand1(ADD_IMAGE_RANGE_Y),rand1(ADD_IMAGE_RANGE_X),gZIndexMax,orgtop,orgleft,function(){});
@@ -366,11 +390,11 @@ if (!wnw.list) wnw.list = {};
                 .attr("src",logoUrl)
                 .css({
                     "position" : "absolute",
-                    "top":0,
-                    "left":LEFT_MARGIN,
-                    "width":200,
-                    "height":200,
-                    "z-index":Z_INDEX_LOGO
+                    "top":LOGO_TOP,
+                    "left":LOGO_LEFT,
+                    "width":LOGO_WIDTH,
+                    //"height":LOGO_HEIGHT,
+                    "z-index":LOGO_Z_INDEX
                 }));
 
         //文字
@@ -380,14 +404,13 @@ if (!wnw.list) wnw.list = {};
                 .css({
                     "color":"#FFFFFF",
                     "text-shadow": "0px 0px 10px gray",
-                    "top":35,
-                    "left":250,
-                    "font-size":40,
-                    //    "font-weight": "bold",
-                    "width":1000,
+                    "top":MOJI_TOP,
+                    "left":MOJI_LEFT,
+                    "font-size":MOJI_SIZE,
+                    "width":MOJI_WIDTH,
                     "opacity": 1,
                     "position":"absolute",
-                    "z-index":Z_INDEX_MESSAGE,
+                    "z-index":MOJI_Z_INDEX,
                     "font-family": "wnw_list_font",
                     "padding":10
                 }));
@@ -416,8 +439,8 @@ if (!wnw.list) wnw.list = {};
                 leftside = gImgList[no - 1];
                 var left = leftside.offset().left + leftside.width();
             }
-            top += rand1(SQEW_SPAN);
-            left += rand1(SQEW_SPAN);
+            top += rand1(SQEW_SPAN) - SQEW_SPAN/1.5;
+            left += rand1(SQEW_SPAN) - SQEW_SPAN/1.5;
             var zIndex = rand1(gZIndexMax);
             viewImage(url,top,left,zIndex,top,left,viewNextImage);
         }else{
@@ -467,28 +490,28 @@ if (!wnw.list) wnw.list = {};
         );
 
         //削除ボタン箱
-        $("#bord").append(
-            $("<img/>")
-                .attr("id","gomi")
-                .attr("src", DELETE_BTN_IMAGE)
-                .css({"position":"absolute" ,
-                      "top":10 ,
-                      "left":1000 ,
-                      "z-index" :Z_INDEX_BUTTON})
-                .click(function(){alert("削除したい写真をここにドロップしてください");})
-                .droppable({
-                    drop: function(e,ui) {
-                        if (confirm("メッセージを削除しますか?")){
-                            var img = $("#" + ui.draggable.attr("id"));
-                            // call delete api
-                            var url = img.attr('msg_id');
-                            $.ajax({type: "delete",url: url});
-                            img.css({"display":"none"});
+        // $("#bord").append(
+        //     $("<img/>")
+        //         .attr("id","gomi")
+        //         .attr("src", DELETE_BTN_IMAGE)
+        //         .css({"position":"absolute" ,
+        //               "top":10 ,
+        //               "left":1000 ,
+        //               "z-index" :Z_INDEX_BUTTON})
+        //         .click(function(){alert("削除したい写真をここにドロップしてください");})
+        //         .droppable({
+        //             drop: function(e,ui) {
+        //                 if (confirm("メッセージを削除しますか?")){
+        //                     var img = $("#" + ui.draggable.attr("id"));
+        //                     // call delete api
+        //                     var url = img.attr('msg_id');
+        //                     $.ajax({type: "delete",url: url});
+        //                     img.css({"display":"none"});
 
-                        }
-                    },
-                    tolerance: "pointer"
-                }));
+        //                 }
+        //             },
+        //             tolerance: "pointer"
+        //         }));
 
         //整頓ボタン
         $("#bord").append(
@@ -496,8 +519,8 @@ if (!wnw.list) wnw.list = {};
                 .attr("src", SEITON_BTN_IMAGE)
                 .css({
                     "position":"absolute" ,
-                    "top":10 ,
-                    "left":800 ,
+                    "top":SEITON_TOP ,
+                    "left":SEITON_LEFT ,
                     "z-index" :Z_INDEX_BUTTON })
                 .click(reset));
 
