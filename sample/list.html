@@ -6,7 +6,7 @@
     <TITLE>WeddinNow List Sample</TITLE>
     <script type=text/javascript src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
     <script type=text/javascript src="js/jquery-ui-1.8.18.custom.min.js"></script>
-    <script type=text/javascript src="../javascripts/wnw_show/list.js.erb"></script>
+    <script type=text/javascript src="../vendor/assets/javascripts/wnw_show/list.js.erb"></script>
     <script type=text/javascript>
     function init(){
       //画像のリスト
@@ -22,6 +22,10 @@
       // 例) "file:///C:/Users/fetaro/git/wnw_list"
       // 例) "/js/vendor/wnw_list"
       var contextPath = "/wnw_list"
+
+      wnw.list.assetPath = function(name) {
+        return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+      };
 
       //呼び出し
       wnw.list.display(imageUrlList,message,logoUrl,contextPath);
