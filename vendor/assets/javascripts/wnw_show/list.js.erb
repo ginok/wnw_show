@@ -66,15 +66,9 @@ if (!wnw.list) wnw.list = {};
     var NEXT_BUTTON_ID = "nextButton";
     var PREV_BUTTON_ID = "prevButton";
     // ロゴ
-    //var LOGO_HEIGHT = 150;
-    var LOGO_WIDTH = 140;
-    var LOGO_LEFT = 50;
-    var LOGO_TOP = 30;
     var LOGO_Z_INDEX = 0;
     // 文字
     var MOJI_Z_INDEX = 0;
-    var MOJI_TOP  = 35;
-    var MOJI_LEFT = 200;
     var MOJI_SIZE = 40;
     var MOJI_WIDTH= 1000;
     //var SOUND_FILE = "/sounds/SoundUnit.swf";//ピンが抜ける音
@@ -355,12 +349,11 @@ if (!wnw.list) wnw.list = {};
     // @param
     //    imgUrlList : 画像のURLのリスト
     //    msg : 画面上部に表示されるメッセージ
-    //    logoUrl : ロゴのURL
+    //    logo : ロゴのオブジェクト
     //    contextPath : ロードするhtmlのコンテキストパス
-    function display(imgUrlList,msg,logoUrl,contextPath){
+    function display(imgUrlList,msg,logo,contextPath){
         gContextPath = contextPath;
         gMessage = msg;
-
         //背景
         $("body").css("background","url(" + wnw.list.assetPath(BACKGROUND_IMAGE) + ")")
             .append($("<div/>").attr("id","bord"))
@@ -383,25 +376,25 @@ if (!wnw.list) wnw.list = {};
         // ロゴ
         $("#bord").append(
             $("<img />")
-                .attr("src",logoUrl)
+                .attr("src",logo.url)
                 .css({
                     "position" : "absolute",
-                    "top":LOGO_TOP,
-                    "left":LOGO_LEFT,
-                    "width":LOGO_WIDTH,
-                    //"height":LOGO_HEIGHT,
+                    "top":logo.top,
+                    "left":logo.left,
+                    "width":logo.width,
+                    "height":logo.height,
                     "z-index":LOGO_Z_INDEX
                 }));
 
         //文字
         $("body").append(
             $("<div />")
-                .html(gMessage)
+                .html(msg.html)
                 .css({
                     "color":"#FFFFFF",
                     "text-shadow": "0px 0px 10px gray",
-                    "top":MOJI_TOP,
-                    "left":MOJI_LEFT,
+                    "top":msg.top,
+                    "left":msg.left,
                     "font-size":MOJI_SIZE,
                     "width":MOJI_WIDTH,
                     "opacity": 1,

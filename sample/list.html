@@ -13,10 +13,19 @@
       var imageUrlList = [ "image/1.png","image/2.png","image/3.png","image/4.png","image/5.png","image/6.png","image/7.png","image/8.png","image/9.png","image/10.png"];
 
       // メッセージ
-      var message = "AさんBさん結婚おめでとう！<br/>みんなからのメッセージが届いています"
-
+      var message  = { 
+        html :"AさんBさん結婚おめでとう！<br/>みんなからのメッセージが届いています",
+        top : 50,
+        left : 150
+      }
       // ロゴ
-      var logoUrl = "image/list_logo.png"
+      var logo = { 
+        url : "image/list_logo.png",
+        width : 100,
+        height : 100,
+        top : 50,
+        left : 50
+      }
 
       // libが呼ばれるURLコンテキストパスを設定する
       // 例) "file:///C:/Users/fetaro/git/wnw_list"
@@ -28,7 +37,7 @@
       };
 
       //呼び出し
-      wnw.list.display(imageUrlList,message,logoUrl,contextPath);
+      wnw.list.display(imageUrlList,message,logo,contextPath);
     };
     </script>
     <style type=text/css>
