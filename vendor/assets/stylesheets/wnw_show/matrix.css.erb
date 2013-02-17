@@ -1,0 +1,54 @@
+body{
+    background-color: #eeeeee;
+    background-image: url('../../images/wnw_show/list/bord.jpg');
+}
+
+/*チェキ*/
+div.cheki {
+    position: absolute;
+    border-radius: 2px;
+    box-shadow:  3px 3px 3px rgba(0,0,0,0.6);
+    background-color: #ffffff;
+    border: 1px outset;
+    padding: 15px; /*チェキと写真の間*/
+    width: 150; /*チェキの横幅*/
+    height: 200; /*チェキの横幅*/
+}
+
+/*文字*/
+div.moji {
+    margin-top: 10px; /*写真と文字の間の幅*/
+}
+
+/*ピン*/
+div.pin {
+    position: absolute;
+    top: -15px;
+    left: 45%;
+    width: 34px;
+    height:37px;
+    background-image: url('../../images/wnw_show/list/pin-0.png')
+}
+
+/*写真の外側(影の部分)*/
+figure {
+    position:relative;
+    display:inline-block;
+    line-height:0;
+    border-radius:5px;
+    overflow:hidden;
+    width: 100%;
+    margin:0px 0px 0px 0px;
+}
+figure::after {
+    content:"";
+    position:absolute;
+    top:0; right:0; bottom:0; left:0;
+    border-radius:5px;
+    box-shadow:inset 0 5px 5px rgba(0,0,0,0.8);
+}
+figure.photo img.inset-shadow{
+    border-radius:5px;
+    box-shadow:inset 0 5px 5px rgba(0,0,0,0.8);
+    width: 100%;
+}

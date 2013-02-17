@@ -1,0 +1,365 @@
+// jQueryに naturalWidth() と naturalHeight()を追加する
+(function($){
+    var props = ['Width', 'Height'],prop;
+    while (prop = props.pop()) {
+       (function (natural, prop) {
+           $.fn[natural] = (natural in new Image()) ?
+               function () {return this[0][natural];} :
+           function () {
+               var node = this[0],img,value;
+              if (node.tagName.toLowerCase() === 'img') {
+                  img = new Image();
+                img.src = node.src,value = img[prop];
+              }
+              return value;
+          };
+       }('natural' + prop, prop.toLowerCase()));
+   }
+}(jQuery));
+
+var wnw;
+if (!wnw) wnw = {};
+if (!wnw.list) wnw.list = {};
+(function(){
+    var assetPath = function(name) {
+        // for wnw rails environment
+        return "<%= asset_path('wnw_show/list/" + name + "') %>";
+        // for local test
+        //return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
+    };
+
+    // -------------------------------------
+    // 定数
+    // -------------------------------------
+    var LEFT_MARGIN = 50; //左のマージン
+    var TOP_MARGIN =  50; //上のマージン
+    var BACKGROUND_IMAGE = '';//背景画像
+    //画像
+    var MSG_RATIO = 0.6; //画像の拡大サイズ
+    var MSG_Y_SPAN = 250; //写真の縦の間隔
+    var MSG_X_SPAN = 250; //写真の縦の間隔
+    var MSG_WIDTH  = 250; //写真の横幅
+    var MSG_ROW_NO = 4; //写真の列数
+    //画像追加
+    var ADD_IMAGE_RANGE_X = 1000;//画像が追加されるときのX座標の範囲
+    var ADD_IMAGE_RANGE_Y = 0;//画像が追加されるときのY座標の範囲
+    //ズーム
+    var ZOOM_Z_INDEX = 1001;
+    var ZOOM_TIME = 500;
+    //画像前後ボタン
+    var Z_INDEX_NEXT_PREV = 1002;
+    var NEXT_BUTTON_ID = "nextButton";
+    var PREV_BUTTON_ID = "prevButton";
+
+    // -------------------------------------
+    // 変数
+    // -------------------------------------
+    var gZIndexMax = 2;//現在画面で表示されている中で最大のz-Index
+    var gImgUrlList; //画像URLのリスト
+    var gLargeImgUrlList; //画像URLのリスト
+    var gImgList = [];//画像のjqueryオブジェクトのリスト
+    var gLargeImgList = [];//画像のjqueryオブジェクトのリスト
+    var gZoomImgId = -1;//現在zoom中の画像のID
+    var gContextPath;//このスクリプトが呼ばれるURLコンテキストパス
+
+    // -------------------------------------
+    // 関数
+    // -------------------------------------
+
+    // 画像を表示する
+    //
+    // @param
+    //   no :
+    //   url: 画像のURL
+    //   large_url: 画像のURL
+    //   top: 画像のtop
+    //   left: 画像のleft
+    //   zIndex: 画像のz-index
+    //   orgtop: 画像の整列後のtop
+    //   orgleft: 画像の整列後のleft
+    //   callback: 画像がロードされたら呼び出す関数
+    function viewImage(no,url,large_url,top,left,zIndex,callback){
+        //拡大した画像
+        var large_img = $("<img />")
+            .attr("id","large_img"+no)
+            .attr("no", no)
+            .attr("next", no+1)
+            .attr("prev", no-1)
+            .attr("src",large_url)
+            .hide()
+            .css({"display":"block",
+                  "position" : "absolute",
+                  "opacity":0
+                 })
+            .click(function(){
+                unzoom(gZoomImgId);
+                $("#" + NEXT_BUTTON_ID).hide();
+                $("#" + PREV_BUTTON_ID).hide();
+            })
+            .load(function(){
+                $(this).width($(this).naturalWidth() * MSG_RATIO);
+                $(this).height($(this).naturalHeight() * MSG_RATIO);
+                $(this).css({"opacity":0});
+            });
+        $("#bord").append(large_img);
+        gLargeImgList.push(large_img);
+
+        //サムネイル画像
+        var cheki = $("<div />")
+            .addClass("cheki")
+            .attr("id","img"+no)
+            .attr("large_id","large_img"+no)
+            .attr("no", no)
+            .attr("next", no+1)
+            .attr("prev", no-1)
+            .attr("msg_id",url)
+            .css({"top":top,
+                  "left":left,
+                  "z-index":zIndex,
+                  "opacity":0
+                 })
+            .click(function(){
+                // Zoom
+                if(gZoomImgId == -1 ){
+                    //Zoomしていない時はZoom
+                    zoom($(this).attr("large_id"));
+                }else{
+                    //Zoom中は元の位置に戻す
+                    unzoom(gZoomImgId);
+                    $("#" + NEXT_BUTTON_ID).hide();
+                    $("#" + PREV_BUTTON_ID).hide();
+                };
+            })
+            .load(function(){
+                //画像の大きさを比率で指定する場合以下をコメントアウト
+                //$(this).width($(this).naturalWidth() * MSG_RATIO);
+                //$(this).height($(this).naturalHeight() * MSG_RATIO);
+                $(this).css({"opacity":1});
+                //callback
+                callback();
+            })
+            .append($("<img/>").attr("src",url))
+        ;
+        $("#bord").append(cheki);
+//        gImgList.push(img);
+
+    };
+
+    // 画像をズームする
+    // @param
+    //   id : 画像のID
+    function zoom(id){
+        if(gZoomImgId == -1){
+            console.log("zoom:" + id);
+            gZoomImgId = id;
+            var _img = $("#"+ id);
+            console.log(_img);
+            //ズームボタン
+            $("#" + NEXT_BUTTON_ID).css({
+                "top":$("body").scrollTop() + $(window).height()/2,
+                "left":$("body").scrollLeft() + $(window).width() - $("#" + NEXT_BUTTON_ID).width()
+            });
+            $("#" + PREV_BUTTON_ID).css({
+                "top":$("body").scrollTop() + $(window).height()/2,
+                "left":$("body").scrollLeft()
+            });
+            $("#" + NEXT_BUTTON_ID).show();
+            $("#" + PREV_BUTTON_ID).show();
+            //画像
+            if($(window).width() > $(window).height()){//横長
+                var ratio = 1.0 *  $(window).height() / _img.height();
+                var zLeft = $("body").scrollLeft() + $(window).width()/2
+                    - _img.width()
+                    * ( $(window).height() / _img.height() )
+                    / 2 ;
+                var zTop = $("body").scrollTop();
+            }else{//縦長
+                var ratio = 1.0 * $(window).width() / _img.width();
+                var zTop = $("body").scrollTop() + $(window).height()/2
+                    - _img.height()
+                    * ( $(window).width() / _img.width() )
+                    / 2 ;
+                var zLeft = $("body").scrollLeft();
+            }
+            _img.attr("orgLeft",_img.offset().left)
+                .attr("orgTop",_img.offset().top)
+                .attr("orgZIndex",_img.css("z-index"));
+            _img.css({"z-index": ZOOM_Z_INDEX});
+            _img.css({"display":"block",
+                      "position" : "absolute",
+                      "top": zTop,
+                      "left": zLeft,
+                      "height" : _img.height() * ratio,
+                      "width" : _img.width() * ratio,
+                      "opacity" : 1
+                     });
+        }
+        //バックを白く
+        $("#maku").show();
+    };
+
+    // 画像のズームを解除する
+    // @param
+    //   id : 画像のID
+    function unzoom(id){
+        if(gZoomImgId != -1){
+            console.log("unzoom" + id);
+            gZoomImgId = -1;
+            var _img=$("#" + id).hide();
+            $("#maku").hide();
+        }
+    }
+
+    //画像を追加する
+    // @param
+    //   url : 画像のurl
+    function addImage(url,large_url){
+        //整列後の位置を先に計算
+        gImgUrlList.push(url);
+        var no = gImgList.length;
+        var orgtop = TOP_MARGIN + Math.floor(no / MSG_ROW_NO ) * MSG_Y_SPAN;
+        if(no % MSG_ROW_NO == 0){ //１列目
+            var orgleft = LEFT_MARGIN;
+        }else{
+            leftside = gImgList[no - 1];
+            var orgleft = leftside.offset().left + leftside.width();
+        }
+        //実際に表示するのはランダムな位置
+        gZIndexMax += 1;
+        viewImage(gImgList.length,url, large_url,ADD_IMAGE_RANGE_Y,ADD_IMAGE_RANGE_X,gZIndexMax,function(){});
+    };
+
+
+    // -------------------------------------
+    // メイン処理
+    // -------------------------------------
+    function display(msgList){
+        //背景
+        $("body").append($("<div/>").attr("id","bord"));
+        //次の画像ボタン
+        $("body").append(
+            $("<img/>")
+                .attr("id",NEXT_BUTTON_ID)
+                .attr("src",wnw.list.assetPath('next.png'))
+                .click(function(){
+                    var _id = $("#" + gZoomImgId).attr("next");
+                    if(_id == gImgList.length){
+                        _id = 0;
+                    }
+                    console.log("nextZoom:" + gZoomImgId + "->" + "img" + _id );
+                    unzoom(gZoomImgId);
+                    zoom("large_img" + _id ) ;
+                })
+                .css({
+                    "position":"absolute" ,
+                    "opacity":0.5,
+                    "z-index" :Z_INDEX_NEXT_PREV,
+                    "display":"none"})
+
+        );
+
+        //前の画像ボタン
+        $("body").append(
+            $("<img/>")
+                .attr("id",PREV_BUTTON_ID)
+                .attr("src",wnw.list.assetPath('prev.png'))
+                .click(function(){
+                    var _id = $("#" + gZoomImgId).attr("prev");
+                    if(_id == -1){
+                        _id = gImgList.length - 1;
+                    }
+                    console.log("nextZoom:" + gZoomImgId + "->" + "img" +_id );
+                    unzoom(gZoomImgId);
+                    zoom("large_img" + _id );
+                })
+                .css({
+                    "position":"absolute" ,
+                    "opacity":0.5,
+                    "z-index" :Z_INDEX_NEXT_PREV,
+                    "display":"none"})
+
+        );
+        //半透明な膜
+        $("body").append(
+           $("<div/>")
+                .attr("id","maku")
+                .css({"background-color":"#ffffff",
+                     "display":"block",
+                     "position" : "absolute",
+                     "top": 0,
+                     "left": 0,
+                     "height" : 10000,
+                     "width" :  10000,
+                     "z-index" : ZOOM_Z_INDEX - 1,
+                     "opacity" : 0.5
+                     })
+                .hide()
+        );
+
+        // 写真
+        for(i = 0 ; i < msgList.length; i = i + 1){
+            var msg = msgList[i];
+            //サムネイル画像
+            var cheki = $("<div />")
+                .addClass("cheki")
+                .attr("id","img"+ i)
+                .attr("large_id","large_img"+i)
+                .attr("no", i)
+                .attr("next", i+1)
+                .attr("prev", i-1)
+                .css({
+                    left : i * 200
+                })
+                .append(
+                  $("<figure/>")
+                        .addClass("photo")
+                        .append(
+                            $("<img/>")
+                                .addClass("inset-shadow")
+                                .attr("src",msg["small"])
+                        )
+                )
+                .append($("<div/>").addClass("pin"))
+            ;
+            $("#bord").append(cheki);
+            //        gImgList.push(img);
+        }// end for
+    };
+
+    // step2. 写真をダウンロードでき次第描画する
+    //
+    // 次の画像の位置を計算して、viewImageを呼び出す。
+    // viewImageで画像の描画が終わったら、コールバックでこの関数を呼び出すので、
+    // 画像がなくなるまでこの関数を繰り返すことになる。
+    function viewNextImage(){
+        if(gImgList.length != gImgUrlList.length){
+            var no = gImgList.length;
+            var url = gImgUrlList[no];
+            var large_url = gLargeImgUrlList[no];
+            //位置計算
+            var top = TOP_MARGIN + Math.floor(no / MSG_ROW_NO ) * MSG_Y_SPAN;
+
+            if(no % MSG_ROW_NO == 0){ //１列目
+                var left = LEFT_MARGIN;
+            }else{
+                //何も考えずに格子状に配置する場合
+                var left = LEFT_MARGIN + Math.floor(no % MSG_ROW_NO ) * MSG_X_SPAN;
+                //左の写真の大きさを考慮する場合
+                //leftside = gImgList[no - 1];
+                //var left = leftside.offset().left + leftside.width();
+            }
+            var zIndex = gZIndexMax;
+            viewImage(gImgList.length,url,large_url,top,left,zIndex,viewNextImage);
+        }else{
+            //描画完了
+        }
+    };
+
+    //publicフィールド・関数定義
+    wnw.list.display = display;
+    wnw.list.addImage = addImage;
+    wnw.list.assetPath = assetPath;
+})();
+
+
+

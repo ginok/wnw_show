@@ -4,26 +4,25 @@
     <meta http-equiv="Cache-Control" content="no-cache">
     <meta http-equiv="Expires" content="Thu, 01 Dec 1994 16:00:00 GMT">
     <TITLE>WeddinNow Matrix Sample</TITLE>
+    <link type=text/css rel="stylesheet" href="../vendor/assets/stylesheets/wnw_show/matrix.css.erb">
     <script type=text/javascript src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
     <script type=text/javascript src="js/jquery-ui-1.8.18.custom.min.js"></script>
     <script type=text/javascript src="../vendor/assets/javascripts/wnw_show/matrix.js.erb"></script>
     <script type=text/javascript>
     function init(){
       //画像のリスト
-      var imageUrlList = [ "image/1.png","image/2.png","image/3.png","image/4.png","image/5.png","image/6.png","image/7.png","image/8.png","image/9.png","image/10.png"];
-      var largeImageUrlList = [ "image/1.png","image/2.png","image/3.png","image/4.png","image/5.png","image/6.png","image/7.png","image/8.png","image/9.png","image/10.png"];
-
-      // libが呼ばれるURLコンテキストパスを設定する
-      // 例) "file:///C:/Users/fetaro/git/wnw_list"
-      // 例) "/js/vendor/wnw_list"
-      var contextPath = "/wnw_list"
-
-      wnw.list.assetPath = function(name) {
-        return "/wnw_show/vendor/assets/images/wnw_show/list/" + name;
-      };
+      var msgList = [ 
+        { "small" : "image/s-1.jpg", "large" : "image/l-1.jpg", "str" : "自分のことのように嬉しいです！\n末長くお幸せに。"},
+        { "small" : "image/s-2.jpg", "large" : "image/l-2.jpg", "str" : "末長くお幸せに"},
+        { "small" : "image/s-3.jpg", "large" : "image/l-3.jpg", "str" : "末長くお幸せに！"},
+        { "small" : "image/s-4.jpg", "large" : "image/l-4.jpg", "str" : "エリーさんみたいに素敵ウーマンになりたいどす！！"},
+        { "small" : "image/s-5.jpg", "large" : "image/l-5.jpg", "str" : "私もがんばります！"},
+        { "small" : "image/s-6.jpg", "large" : "image/l-6.jpg", "str" : "東京駅の夜景がバック"},
+        { "small" : "image/s-7.jpg", "large" : "image/l-7.jpg", "str" : "ベストショット"}
+      ]
 
       //呼び出し
-      wnw.list.display(imageUrlList,largeImageUrlList,contextPath);
+      wnw.list.display(msgList);
     };
     </script>
     <style type=text/css>
