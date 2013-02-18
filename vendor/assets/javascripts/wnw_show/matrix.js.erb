@@ -299,6 +299,27 @@ if (!wnw.list) wnw.list = {};
         // 写真
         for(i = 0 ; i < msgList.length; i = i + 1){
             var msg = msgList[i];
+            //写真
+            var img = $("<img/>")
+                .attr("src",msg["small"])
+                .load(function(){
+                    if($(this).naturalWidth() > $(this).naturalHeight()){
+                        $(this).css({
+                            //TODO
+                            "height":"100%",
+                            "left" :( $(this).naturalWidth() - $(this).naturalHeight() ) / 2
+
+                        });
+                        console.log("a" + ($(this).naturalWidth() - $(this).naturalHeight() ) / 2 );
+                    }else{
+                        $(this).css({
+                            "width":"100%",
+                            "top" :( $(this).naturalHeight()- $(this).naturalWidth() ) / 2
+                        });
+                        console.log("b");
+
+                    }
+                });
             //サムネイル画像
             var cheki = $("<div />")
                 .addClass("cheki")
@@ -313,11 +334,7 @@ if (!wnw.list) wnw.list = {};
                 .append(
                   $("<figure/>")
                         .addClass("photo")
-                        .append(
-                            $("<img/>")
-                                .addClass("inset-shadow")
-                                .attr("src",msg["small"])
-                        )
+                        .append(img)
                 )
                 .append($("<div/>").addClass("pin"))
             ;
@@ -360,6 +377,3 @@ if (!wnw.list) wnw.list = {};
     wnw.list.addImage = addImage;
     wnw.list.assetPath = assetPath;
 })();
-
-
-
