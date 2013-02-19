@@ -15,6 +15,25 @@ div.cheki {
     height: 200; /*チェキの横幅*/
 }
 
+/*写真の外側(影の部分)*/
+figure {
+    position:relative;
+    display:inline-block;
+    line-height:0;
+    border-radius:5px;
+    overflow:hidden;
+    width: 150;/*写真の横*/
+    height: 150;/*写真の縦*/
+    margin:0px 0px 0px 0px;
+}
+figure::after {
+    content:"";
+    position:absolute;
+    top:0; right:0; bottom:0; left:0;
+    border-radius:5px;
+    box-shadow:inset 0 5px 5px rgba(0,0,0,0.8);
+}
+
 /*文字*/
 div.moji {
     margin-top: 10px; /*写真と文字の間の幅*/
@@ -30,21 +49,3 @@ div.pin {
     background-image: url('../../images/wnw_show/list/pin-0.png')
 }
 
-/*写真の外側(影の部分)*/
-figure {
-    position:relative;
-    display:inline-block;
-    line-height:0;
-    border-radius:5px;
-    overflow:hidden;
-    width: 100%;/*外側の横*/
-    height: 80%;/*外側の縦*/
-    margin:0px 0px 0px 0px;
-}
-figure::after {
-    content:"";
-    position:absolute;
-    top:0; right:0; bottom:0; left:0;
-    border-radius:5px;
-    box-shadow:inset 0 5px 5px rgba(0,0,0,0.8);
-}

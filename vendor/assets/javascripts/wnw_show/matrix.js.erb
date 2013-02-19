@@ -300,28 +300,31 @@ if (!wnw.list) wnw.list = {};
         for(i = 0 ; i < msgList.length; i = i + 1){
             var msg = msgList[i];
             //写真
-            var img = $("<img/>")
+            var _img = $("<img/>")
                 .attr("src",msg["small"])
+                .hide()
                 .load(function(){
                     if($(this).naturalWidth() > $(this).naturalHeight()){
+                        //横長であれば、写真のセンターが真ん中に来るようにずらす
+                        var _left =  - ( $(this).naturalWidth() - $(this).naturalHeight() ) / 2;
                         $(this).css({
-                            //TODO
+                            "position":"absolute",
                             "height":"100%",
-                            "left" :( $(this).naturalWidth() - $(this).naturalHeight() ) / 2
-
+                            "left" : _left
                         });
-                        console.log("a" + ($(this).naturalWidth() - $(this).naturalHeight() ) / 2 );
                     }else{
+                        //縦長であれば、ずらさない。写真の上を枠の上に重ねる配置。
+                        var _top = 0;
                         $(this).css({
+                            "position":"absolute",
                             "width":"100%",
-                            "top" :( $(this).naturalHeight()- $(this).naturalWidth() ) / 2
+                            "top" : _top
                         });
-                        console.log("b");
-
                     }
+                    $(this).show();
                 });
             //サムネイル画像
-            var cheki = $("<div />")
+            var _cheki = $("<div />")
                 .addClass("cheki")
                 .attr("id","img"+ i)
                 .attr("large_id","large_img"+i)
@@ -331,15 +334,11 @@ if (!wnw.list) wnw.list = {};
                 .css({
                     left : i * 200
                 })
-                .append(
-                  $("<figure/>")
-                        .addClass("photo")
-                        .append(img)
-                )
+                .append($("<figure/>").addClass("photo").append(_img))
+                .append($("<div/>").addClass("moji").html(msg["moji"]))
                 .append($("<div/>").addClass("pin"))
             ;
-            $("#bord").append(cheki);
-            //        gImgList.push(img);
+            $("#bord").append(_cheki);
         }// end for
     };
 
