@@ -21,13 +21,53 @@ var wnw;
 if (!wnw) wnw = {};
 if (!wnw.list) wnw.list = {};
 (function(){
-    var COURSEL_NO = 0;//カルーセルの番号。今回は1つしか使わないので0
-
-
     function display(msgList){
         make_list(msgList);
         make_slide(msgList);
     };
+
+    function add_msg(msg,i){
+        var _img = $("<img/>")
+            .attr("src",msg["small"])
+            .hide()
+            .load(function(){
+                if($(this).naturalWidth() > $(this).naturalHeight()){
+                    //横長であれば、写真のセンターが真ん中に来るようにずらす
+                    var _left =  - ( $(this).naturalWidth() - $(this).naturalHeight() ) / 2;
+                    $(this).css({"position":"absolute","height":"100%","left" : _left});
+                }else{
+                    //縦長であれば、ずらさない。写真の上を枠の上に重ねる配置。
+                    var _top = 0;
+                    $(this).css({"position":"absolute","width":"100%","top" : _top});
+                }
+                $(this).show();
+            })
+        ;
+        //チェキ
+        var _cheki = $("<div />")
+            .addClass("cheki")
+            .attr("id","img"+ i)
+            .attr("large_id","large_img"+i)
+            .attr("no", i)
+            .attr("next", i+1)
+            .attr("prev", i-1)
+            .append($("<figure/>").addClass("photo").append(_img))
+            .append($("<div/>").addClass("moji").html(msg["moji"]))
+        //.append($("<div/>").addClass("pin")) // pinを追加する場合はここ
+            .click(function(){
+                $("#bord").hide();
+                $("#slide").show();
+                //n番目にスライドする関数をアニメーション時間0秒で実行して、
+                //そのスライドを表示される
+                jCarousel.slide($(this).attr("no"),0);
+                //ここでリサイズしないと、liのwidthが100になってしまい表示がおかしくなる
+                jCarousel.resize();
+            })
+        ;
+        $("#bord_ul").prepend($("<li/>").addClass("cheki").append(_cheki));
+
+    };
+
     function make_list(msgList){
         //背景
         $("body").append(
@@ -35,49 +75,9 @@ if (!wnw.list) wnw.list = {};
                 .attr("id","bord")
                 .append($("<ul/>").attr("id","bord_ul"))
         );
-        // 写真
         for(i = 0 ; i < msgList.length; i = i + 1){
-            var msg = msgList[i];
-            //写真
-            var _img = $("<img/>")
-                .attr("src",msg["small"])
-                .hide()
-                .load(function(){
-                    if($(this).naturalWidth() > $(this).naturalHeight()){
-                        //横長であれば、写真のセンターが真ん中に来るようにずらす
-                        var _left =  - ( $(this).naturalWidth() - $(this).naturalHeight() ) / 2;
-                        $(this).css({"position":"absolute","height":"100%","left" : _left});
-                    }else{
-                        //縦長であれば、ずらさない。写真の上を枠の上に重ねる配置。
-                        var _top = 0;
-                        $(this).css({"position":"absolute","width":"100%","top" : _top});
-                    }
-                    $(this).show();
-                })
-            ;
-            //チェキ
-            var _cheki = $("<div />")
-                .addClass("cheki")
-                .attr("id","img"+ i)
-                .attr("large_id","large_img"+i)
-                .attr("no", i)
-                .attr("next", i+1)
-                .attr("prev", i-1)
-                .append($("<figure/>").addClass("photo").append(_img))
-                .append($("<div/>").addClass("moji").html(msg["moji"]))
-                //.append($("<div/>").addClass("pin")) // pinを追加する場合はここ
-                .click(function(){
-                    $("#bord").hide();
-                    $("#slide").show();
-                    //n番目にスライドする関数をアニメーション時間0秒で実行して、
-                    //そのスライドを表示される
-                    jCarousel.slide(COURSEL_NO,$(this).attr("no"),0);
-                    //ここでリサイズしないと、liのwidthが100になってしまい表示がおかしくなる
-                    jCarousel.resize();
-                })
-            ;
-            $("#bord_ul").append($("<li/>").addClass("cheki").append(_cheki));
-        }// end for
+            add_msg(msgList[i],i);
+        }
     };
 
    function make_slide(msgList){
@@ -88,7 +88,7 @@ if (!wnw.list) wnw.list = {};
        );
 
        //カルーセル
-       var jc = $("<ul/>").addClass("jCarousel");
+       var jc = $("<ul/>").addClass("jCarousel").attr("id","jCarousel");
        for(var i = 0 ; i < msgList.length; i = i + 1){
            var msg = msgList[i];
            var _large_img = $("<img/>")
@@ -147,8 +147,8 @@ if (!wnw.list) wnw.list = {};
        var nextButton=$("<div/>")
            .addClass("next")
            .click(function(){
-               _num=jCarousel.currentNum(COURSEL_NO);
-               jCarousel.slide(0,(_num + 1 ) % jCarousel.maxNum(COURSEL_NO),250);
+               _num=jCarousel.currentNum();
+               jCarousel.slide((_num + 1 ) % jCarousel.maxNum(),250);
            });
        $("#slide").append(nextButton);
 
@@ -156,8 +156,8 @@ if (!wnw.list) wnw.list = {};
        var prevButton=$("<div/>")
            .addClass("prev")
            .click(function(){
-               _num=jCarousel.currentNum(COURSEL_NO);
-               jCarousel.slide(COURSEL_NO,(_num - 1 + jCarousel.maxNum(COURSEL_NO) ) % jCarousel.maxNum(COURSEL_NO),250);
+               _num=jCarousel.currentNum();
+               jCarousel.slide((_num - 1 + jCarousel.maxNum() ) % jCarousel.maxNum(),250);
            });
        $("#slide").append(prevButton);
 
@@ -170,6 +170,7 @@ if (!wnw.list) wnw.list = {};
            });
        $("#slide").append(backButton);
 
+
        //カウンタ
        var counter=$("<div/>")
            .addClass("counter");
@@ -179,6 +180,8 @@ if (!wnw.list) wnw.list = {};
        // $("#slide").append(maku);
 
    }
+
     //publicフィールド・関数定義
     wnw.list.display = display;
+    wnw.list.add_msg = add_msg;
 })();
