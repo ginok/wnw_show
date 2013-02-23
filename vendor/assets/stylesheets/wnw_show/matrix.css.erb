@@ -1,11 +1,16 @@
 body{
-    background-color: #eeeeee;
-    background-image: url('../../images/wnw_show/list/bord.jpg');
+    background-color: #cccccc;
+    /* background-image: url('../../images/wnw_show/list/bord.jpg'); */
+}
+/*ちぇきリスト*/
+li.cheki{
+    list-style-type:none;
+    float:left;
+    margin: 10px;
 }
 
 /*チェキ*/
 div.cheki {
-    position: absolute;
     border-radius: 2px;
     box-shadow:  3px 3px 3px rgba(0,0,0,0.6);
     background-color: #ffffff;
@@ -78,10 +83,10 @@ div.next {
     position: fixed;
     top: 30%;
     left: 90%;
-    width: 100px;
-    height:250px;
+    width: 129px;
+    height:116px;
     opacity:0.5;
-    background-image: url('../../images/wnw_show/list/next.png')
+    background-image: url('../../images/wnw_show/matrix/next.png')
 }
 
 /*prevボタン*/
@@ -89,10 +94,10 @@ div.prev {
     position: fixed;
     top: 30%;
     left: 0%;
-    width: 100px;
-    height:250px;
+    width: 129px;
+    height:116px;
     opacity:0.5;
-    background-image: url('../../images/wnw_show/list/prev.png')
+    background-image: url('../../images/wnw_show/matrix/prev.png')
 }
 
 /*半透明の幕*/
@@ -106,20 +111,27 @@ div.maku {
     opacity : 0.5;
 }
 
-/*prevボタン*/
+/*backボタン*/
 div.back {
     position: fixed;
-    top: 5%;
+    top: 0%;
     left: 0%;
-    width: 50px;
-    height:50px;
-    background-image: url('../../images/wnw_show/list/pin-0.png')
+    width: 357px;
+    height:96px;
+    background-image: url('../../images/wnw_show/matrix/back.png')
+}
+
+div.counter {
+    position:fixed;
+    top: 0%
+    left: 90%;
 }
 
 /*ピン*/
+
 div.pin {
-    position: absolute;
-    top: -15px;
+    position: relative;
+    top: -15%;
     left: 45%;
     width: 34px;
     height:37px;

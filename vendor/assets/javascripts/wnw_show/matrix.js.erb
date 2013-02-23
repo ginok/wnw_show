@@ -21,13 +21,20 @@ var wnw;
 if (!wnw) wnw = {};
 if (!wnw.list) wnw.list = {};
 (function(){
+    var COURSEL_NO = 0;//カルーセルの番号。今回は1つしか使わないので0
+
+
     function display(msgList){
         make_list(msgList);
         make_slide(msgList);
     };
     function make_list(msgList){
         //背景
-        $("body").append($("<div/>").attr("id","bord"));
+        $("body").append(
+            $("<div/>")
+                .attr("id","bord")
+                .append($("<ul/>").attr("id","bord_ul"))
+        );
         // 写真
         for(i = 0 ; i < msgList.length; i = i + 1){
             var msg = msgList[i];
@@ -56,19 +63,20 @@ if (!wnw.list) wnw.list = {};
                 .attr("no", i)
                 .attr("next", i+1)
                 .attr("prev", i-1)
-                .css({
-                    left : i * 200
-                })
                 .append($("<figure/>").addClass("photo").append(_img))
                 .append($("<div/>").addClass("moji").html(msg["moji"]))
-                .append($("<div/>").addClass("pin"))
+                //.append($("<div/>").addClass("pin")) // pinを追加する場合はここ
                 .click(function(){
                     $("#bord").hide();
                     $("#slide").show();
-                    jCarousel.slide(0,$(this).attr("no"),0);
+                    //n番目にスライドする関数をアニメーション時間0秒で実行して、
+                    //そのスライドを表示される
+                    jCarousel.slide(COURSEL_NO,$(this).attr("no"),0);
+                    //ここでリサイズしないと、liのwidthが100になってしまい表示がおかしくなる
+                    jCarousel.resize();
                 })
             ;
-            $("#bord").append(_cheki);
+            $("#bord_ul").append($("<li/>").addClass("cheki").append(_cheki));
         }// end for
     };
 
@@ -82,15 +90,27 @@ if (!wnw.list) wnw.list = {};
        //カルーセル
        var jc = $("<ul/>").addClass("jCarousel");
        for(var i = 0 ; i < msgList.length; i = i + 1){
-            var msg = msgList[i];
-            var _img =
-               $("<img/>")
+           var msg = msgList[i];
+           var _large_img = $("<img/>")
                .attr("src",msg["large"])
+               .attr("no",i)
                .hide()
                .load(function(){
                    $(this).css({"height":"100%","width":"100%"});
-                    $(this).show();
+                   $(this).show();
+                   console.log("loaded large_image: "+ $(this).attr("src") +  "  width=" +$(this).naturalWidth());
+                   //画像のロードが完了したら親のdomのサイズを調整
+                   $("#large_img" + $(this).attr("no")).css({
+                       "position":"relative",
+                       "width":$(this).naturalWidth(),
+                       "left":$(window).width()/2 - $(this).naturalWidth()/2
+                   });
+                   $("#large_photo" + $(this).attr("no")).css({
+                       "width":$(this).naturalWidth(),
+                       "height":$(this).naturalHeight()
+                   });
                });
+
 
            var _large_cheki = $("<div />")
                .addClass("large_cheki")
@@ -99,22 +119,17 @@ if (!wnw.list) wnw.list = {};
                .attr("no", i)
                .attr("next", i+1)
                .attr("prev", i-1)
-               .css({"width":_img.naturalWidth(),"position":"relative","left":$(window).width()/2 - _img.naturalWidth()/2})
                .append($("<figure/>")
                        .addClass("large_photo")
-                       .append(_img)
-                       .css({"width":_img.naturalWidth(),"height":_img.naturalHeight()})
+                       .attr("id","large_photo" + i)
+                       .append(_large_img)
                        )
                .append(
                    $("<div/>")
                        .addClass("large_moji")
                        .html(msg["moji"])
                )
-               .click(function(){
-                    $("#slide").show();
-                })
             ;
-
 
             jc.append(
                 $("<li/>").append(_large_cheki)
@@ -131,13 +146,19 @@ if (!wnw.list) wnw.list = {};
        //次の画像ボタン
        var nextButton=$("<div/>")
            .addClass("next")
-           .click(function(){jCarousel.next(0,250);});
+           .click(function(){
+               _num=jCarousel.currentNum(COURSEL_NO);
+               jCarousel.slide(0,(_num + 1 ) % jCarousel.maxNum(COURSEL_NO),250);
+           });
        $("#slide").append(nextButton);
 
-       //次の画像ボタン
+       //前の画像ボタン
        var prevButton=$("<div/>")
            .addClass("prev")
-           .click(function(){jCarousel.prev(0,250);});
+           .click(function(){
+               _num=jCarousel.currentNum(COURSEL_NO);
+               jCarousel.slide(COURSEL_NO,(_num - 1 + jCarousel.maxNum(COURSEL_NO) ) % jCarousel.maxNum(COURSEL_NO),250);
+           });
        $("#slide").append(prevButton);
 
        //戻るボタン
@@ -149,13 +170,15 @@ if (!wnw.list) wnw.list = {};
            });
        $("#slide").append(backButton);
 
+       //カウンタ
+       var counter=$("<div/>")
+           .addClass("counter");
+
         //半透明な膜
-       var maku = $("<div/>").addClass("maku").attr("id","maku");
+       //var maku = $("<div/>").addClass("maku").attr("id","maku");
        // $("#slide").append(maku);
 
    }
-
-
     //publicフィールド・関数定義
     wnw.list.display = display;
 })();
