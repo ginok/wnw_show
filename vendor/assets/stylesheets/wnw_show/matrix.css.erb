@@ -39,6 +39,73 @@ div.moji {
     margin-top: 10px; /*写真と文字の間の幅*/
 }
 
+
+/*拡大チェキ*/
+div.large_cheki {
+    border-radius: 2px;
+    box-shadow:  3px 3px 3px rgba(0,0,0,0.6);
+    background-color: #ffffff;
+    border: 1px outset;
+    padding: 15px; /*チェキと写真の間*/
+}
+
+/*写真の外側(影の部分)*/
+figure.large_photo {
+    position:relative;
+    display:inline-block;
+    line-height:0;
+    border-radius:5px;
+    overflow:hidden;
+    margin:0px 0px 0px 0px;
+}
+figure.large::after {
+    content:"";
+    position:absolute;
+    top:0; right:0; bottom:0; left:0;
+    border-radius:5px;
+    box-shadow:inset 0 5px 5px rgba(0,0,0,0.8);
+}
+
+/*拡大文字*/
+div.large_moji {
+    margin-top: 10px; /*写真と文字の間の幅*/
+}
+
+
+
+/*nextボタン*/
+div.next {
+    position: fixed;
+    top: 30%;
+    left: 90%;
+    width: 100px;
+    height:250px;
+    opacity:0.5;
+    background-image: url('../../images/wnw_show/list/next.png')
+}
+
+/*prevボタン*/
+div.prev {
+    position: fixed;
+    top: 30%;
+    left: 0%;
+    width: 100px;
+    height:250px;
+    opacity:0.5;
+    background-image: url('../../images/wnw_show/list/prev.png')
+}
+
+/*半透明の幕*/
+div.maku {
+    background-color:#ffffff;
+    position : fixed;
+    top: 0%;
+    left: 0%;
+    height : 100%;
+    width :  100%;
+    opacity : 0.5;
+}
+
 /*ピン*/
 div.pin {
     position: absolute;
@@ -48,4 +115,5 @@ div.pin {
     height:37px;
     background-image: url('../../images/wnw_show/list/pin-0.png')
 }
+
 

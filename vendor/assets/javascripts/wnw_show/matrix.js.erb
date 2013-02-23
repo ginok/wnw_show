@@ -79,28 +79,6 @@ if (!wnw.list) wnw.list = {};
     //   orgleft: 画像の整列後のleft
     //   callback: 画像がロードされたら呼び出す関数
     function viewImage(no,url,large_url,top,left,zIndex,callback){
-        //拡大した画像
-        var large_img = $("<img />")
-            .attr("id","large_img"+no)
-            .attr("no", no)
-            .attr("next", no+1)
-            .attr("prev", no-1)
-            .attr("src",large_url)
-            .hide()
-            .css({"display":"block",
-                  "position" : "absolute",
-                  "opacity":0
-                 })
-            .click(function(){
-                unzoom(gZoomImgId);
-                $("#" + NEXT_BUTTON_ID).hide();
-                $("#" + PREV_BUTTON_ID).hide();
-            })
-            .load(function(){
-                $(this).width($(this).naturalWidth() * MSG_RATIO);
-                $(this).height($(this).naturalHeight() * MSG_RATIO);
-                $(this).css({"opacity":0});
-            });
         $("#bord").append(large_img);
         gLargeImgList.push(large_img);
 
@@ -145,59 +123,6 @@ if (!wnw.list) wnw.list = {};
 
     };
 
-    // 画像をズームする
-    // @param
-    //   id : 画像のID
-    function zoom(id){
-        if(gZoomImgId == -1){
-            console.log("zoom:" + id);
-            gZoomImgId = id;
-            var _img = $("#"+ id);
-            console.log(_img);
-            //ズームボタン
-            $("#" + NEXT_BUTTON_ID).css({
-                "top":$("body").scrollTop() + $(window).height()/2,
-                "left":$("body").scrollLeft() + $(window).width() - $("#" + NEXT_BUTTON_ID).width()
-            });
-            $("#" + PREV_BUTTON_ID).css({
-                "top":$("body").scrollTop() + $(window).height()/2,
-                "left":$("body").scrollLeft()
-            });
-            $("#" + NEXT_BUTTON_ID).show();
-            $("#" + PREV_BUTTON_ID).show();
-            //画像
-            if($(window).width() > $(window).height()){//横長
-                var ratio = 1.0 *  $(window).height() / _img.height();
-                var zLeft = $("body").scrollLeft() + $(window).width()/2
-                    - _img.width()
-                    * ( $(window).height() / _img.height() )
-                    / 2 ;
-                var zTop = $("body").scrollTop();
-            }else{//縦長
-                var ratio = 1.0 * $(window).width() / _img.width();
-                var zTop = $("body").scrollTop() + $(window).height()/2
-                    - _img.height()
-                    * ( $(window).width() / _img.width() )
-                    / 2 ;
-                var zLeft = $("body").scrollLeft();
-            }
-            _img.attr("orgLeft",_img.offset().left)
-                .attr("orgTop",_img.offset().top)
-                .attr("orgZIndex",_img.css("z-index"));
-            _img.css({"z-index": ZOOM_Z_INDEX});
-            _img.css({"display":"block",
-                      "position" : "absolute",
-                      "top": zTop,
-                      "left": zLeft,
-                      "height" : _img.height() * ratio,
-                      "width" : _img.width() * ratio,
-                      "opacity" : 1
-                     });
-        }
-        //バックを白く
-        $("#maku").show();
-    };
-
     // 画像のズームを解除する
     // @param
     //   id : 画像のID
@@ -234,68 +159,12 @@ if (!wnw.list) wnw.list = {};
     // メイン処理
     // -------------------------------------
     function display(msgList){
+        //make_list(msgList);
+        make_slide(msgList);
+    };
+    function make_list(msgList){
         //背景
         $("body").append($("<div/>").attr("id","bord"));
-        //次の画像ボタン
-        $("body").append(
-            $("<img/>")
-                .attr("id",NEXT_BUTTON_ID)
-                .attr("src",wnw.list.assetPath('next.png'))
-                .click(function(){
-                    var _id = $("#" + gZoomImgId).attr("next");
-                    if(_id == gImgList.length){
-                        _id = 0;
-                    }
-                    console.log("nextZoom:" + gZoomImgId + "->" + "img" + _id );
-                    unzoom(gZoomImgId);
-                    zoom("large_img" + _id ) ;
-                })
-                .css({
-                    "position":"absolute" ,
-                    "opacity":0.5,
-                    "z-index" :Z_INDEX_NEXT_PREV,
-                    "display":"none"})
-
-        );
-
-        //前の画像ボタン
-        $("body").append(
-            $("<img/>")
-                .attr("id",PREV_BUTTON_ID)
-                .attr("src",wnw.list.assetPath('prev.png'))
-                .click(function(){
-                    var _id = $("#" + gZoomImgId).attr("prev");
-                    if(_id == -1){
-                        _id = gImgList.length - 1;
-                    }
-                    console.log("nextZoom:" + gZoomImgId + "->" + "img" +_id );
-                    unzoom(gZoomImgId);
-                    zoom("large_img" + _id );
-                })
-                .css({
-                    "position":"absolute" ,
-                    "opacity":0.5,
-                    "z-index" :Z_INDEX_NEXT_PREV,
-                    "display":"none"})
-
-        );
-        //半透明な膜
-        $("body").append(
-           $("<div/>")
-                .attr("id","maku")
-                .css({"background-color":"#ffffff",
-                     "display":"block",
-                     "position" : "absolute",
-                     "top": 0,
-                     "left": 0,
-                     "height" : 10000,
-                     "width" :  10000,
-                     "z-index" : ZOOM_Z_INDEX - 1,
-                     "opacity" : 0.5
-                     })
-                .hide()
-        );
-
         // 写真
         for(i = 0 ; i < msgList.length; i = i + 1){
             var msg = msgList[i];
@@ -307,23 +176,16 @@ if (!wnw.list) wnw.list = {};
                     if($(this).naturalWidth() > $(this).naturalHeight()){
                         //横長であれば、写真のセンターが真ん中に来るようにずらす
                         var _left =  - ( $(this).naturalWidth() - $(this).naturalHeight() ) / 2;
-                        $(this).css({
-                            "position":"absolute",
-                            "height":"100%",
-                            "left" : _left
-                        });
+                        $(this).css({"position":"absolute","height":"100%","left" : _left});
                     }else{
                         //縦長であれば、ずらさない。写真の上を枠の上に重ねる配置。
                         var _top = 0;
-                        $(this).css({
-                            "position":"absolute",
-                            "width":"100%",
-                            "top" : _top
-                        });
+                        $(this).css({"position":"absolute","width":"100%","top" : _top});
                     }
                     $(this).show();
-                });
-            //サムネイル画像
+                })
+            ;
+            //チェキ
             var _cheki = $("<div />")
                 .addClass("cheki")
                 .attr("id","img"+ i)
@@ -337,10 +199,87 @@ if (!wnw.list) wnw.list = {};
                 .append($("<figure/>").addClass("photo").append(_img))
                 .append($("<div/>").addClass("moji").html(msg["moji"]))
                 .append($("<div/>").addClass("pin"))
+                .click(function(){
+                    $("#slide").show();
+                })
             ;
             $("#bord").append(_cheki);
         }// end for
     };
+
+    var gNowSlide=0;
+   function make_slide(msgList){
+       $("body").append($("<div/>").attr("id","slide"));
+
+       //次の画像ボタン
+       var nextButton=$("<div/>")
+                .addClass("next")
+                .click(function(){
+                    jCarousel.slide(0,gNowSlide + 1,250);
+                });
+       //次の画像ボタン
+       var prevButton=$("<div/>")
+                .addClass("prev")
+                .attr("id",PREV_BUTTON_ID)
+                .click(function(){
+                    jCarousel.slide(0,gNowSlide - 1,250);
+                });
+        //半透明な膜
+       var maku = $("<div/>").addClass("maku").attr("id","maku");
+
+       // $("#slide").append(maku);
+       $("#slide").append(nextButton);
+       $("#slide").append(prevButton);
+
+       //カルーセル
+       var jc = $("<ul/>").addClass("jCarousel");
+       for(var i = 0 ; i < msgList.length; i = i + 1){
+            var msg = msgList[i];
+            var _img =
+               $("<img/>")
+               .attr("src",msg["large"])
+               .hide()
+               .load(function(){
+                   $(this).css({"height":"100%","width":"100%"});
+                    $(this).show();
+               });
+
+           var _large_cheki = $("<div />")
+               .addClass("large_cheki")
+               .attr("id","large_img"+ i)
+               .attr("small_id","img"+i)
+               .attr("no", i)
+               .attr("next", i+1)
+               .attr("prev", i-1)
+               .css({"width":_img.naturalWidth(),"position":"relative","left":$(window).width()/2 - _img.naturalWidth()/2})
+               .append($("<figure/>")
+                       .addClass("large_photo")
+                       .append(_img)
+                       .css({"width":_img.naturalWidth(),"height":_img.naturalHeight()})
+                       )
+               .append(
+                   $("<div/>")
+                       .addClass("large_moji")
+                       .html(msg["moji"])
+               )
+               .click(function(){
+                    $("#slide").show();
+                })
+            ;
+
+
+            jc.append(
+                $("<li/>").append(_large_cheki)
+            );
+        }
+       $("#slide").append(jc);
+
+       jCarousel.ini();
+       jCarousel.set();
+
+
+
+   }
 
     // step2. 写真をダウンロードでき次第描画する
     //
