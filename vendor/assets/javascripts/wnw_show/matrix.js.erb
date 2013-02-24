@@ -57,9 +57,10 @@ if (!wnw.list) wnw.list = {};
             .click(function(){
                 $("#bord").hide();
                 $("#slide").show();
-                //n番目にスライドする関数をアニメーション時間0秒で実行して、
-                //そのスライドを表示される
-                jCarousel.slide($(this).attr("no"),0);
+                //指定のNoにスライドする関数をアニメーション時間0秒で実行して、
+                //一瞬にしてそのスライドを表示させる
+                console.log(jCarousel.maxNum() - $(this).attr("no") - 1);
+                slide(jCarousel.maxNum() - $(this).attr("no") - 1,0);
                 //ここでリサイズしないと、liのwidthが100になってしまい表示がおかしくなる
                 jCarousel.resize();
             })
@@ -131,8 +132,7 @@ if (!wnw.list) wnw.list = {};
                )
             ;
 
-            jc.append(
-                $("<li/>").append(_large_cheki)
+            jc.prepend($("<li/>").append(_large_cheki)
             );
         }
        $("#slide").append(jc);
@@ -146,18 +146,20 @@ if (!wnw.list) wnw.list = {};
        //次の画像ボタン
        var nextButton=$("<div/>")
            .addClass("next")
+           .attr("id","next")
            .click(function(){
-               _num=jCarousel.currentNum();
-               jCarousel.slide((_num + 1 ) % jCarousel.maxNum(),250);
+               _num= jCarousel.currentNum();
+               slide((_num + 1 ) % jCarousel.maxNum(),250);
            });
        $("#slide").append(nextButton);
 
        //前の画像ボタン
        var prevButton=$("<div/>")
            .addClass("prev")
+           .attr("id","prev")
            .click(function(){
                _num=jCarousel.currentNum();
-               jCarousel.slide((_num - 1 + jCarousel.maxNum() ) % jCarousel.maxNum(),250);
+               slide((_num - 1 + jCarousel.maxNum() ) % jCarousel.maxNum(),250);
            });
        $("#slide").append(prevButton);
 
@@ -180,6 +182,19 @@ if (!wnw.list) wnw.list = {};
        // $("#slide").append(maku);
 
    }
+    function slide(no,speed){
+        jCarousel.slide(no,speed);
+        if(no==0){
+            $("#prev").hide();
+        }else{
+            $("#prev").show();
+        }
+        if(no== jCarousel.maxNum()-1){
+            $("#next").hide();
+        }else{
+            $("#next").show();
+        }
+    }
 
     //publicフィールド・関数定義
     wnw.list.display = display;
