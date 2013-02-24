@@ -19,7 +19,7 @@
 
 var wnw;
 if (!wnw) wnw = {};
-if (!wnw.list) wnw.list = {};
+if (!wnw.bord) wnw.bord = {};
 (function(){
     var assetPath = function(name) {
         // for wnw rails environment
@@ -95,16 +95,16 @@ if (!wnw.list) wnw.list = {};
     // ピンの画像のURLをランダムで返す
     var getPinImgPath = function() {
         var imgPaths = [
-            wnw.list.assetPath('pin-0.png'),
-            wnw.list.assetPath('pin-1.png'),
-            wnw.list.assetPath('pin-2.png'),
-            wnw.list.assetPath('pin-3.png'),
-            wnw.list.assetPath('pin-4.png'),
-            wnw.list.assetPath('pin-5.png'),
-            wnw.list.assetPath('pin-6.png'),
-            wnw.list.assetPath('pin-7.png'),
-            wnw.list.assetPath('pin-8.png'),
-            wnw.list.assetPath('pin-9.png')
+            wnw.bord.assetPath('pin-0.png'),
+            wnw.bord.assetPath('pin-1.png'),
+            wnw.bord.assetPath('pin-2.png'),
+            wnw.bord.assetPath('pin-3.png'),
+            wnw.bord.assetPath('pin-4.png'),
+            wnw.bord.assetPath('pin-5.png'),
+            wnw.bord.assetPath('pin-6.png'),
+            wnw.bord.assetPath('pin-7.png'),
+            wnw.bord.assetPath('pin-8.png'),
+            wnw.bord.assetPath('pin-9.png')
         ];
         return imgPaths[Math.floor(Math.random() * 9)];
     };
@@ -355,7 +355,7 @@ if (!wnw.list) wnw.list = {};
         gContextPath = contextPath;
         gMessage = msg;
         //背景
-        $("body").css("background","url(" + wnw.list.assetPath(BACKGROUND_IMAGE) + ")")
+        $("body").css("background","url(" + wnw.bord.assetPath(BACKGROUND_IMAGE) + ")")
             .append($("<div/>").attr("id","bord"))
             .append($("<div/>").attr("id","SoundUnit"));
         //loading
@@ -444,7 +444,7 @@ if (!wnw.list) wnw.list = {};
         $("body").append(
             $("<img/>")
                 .attr("id",NEXT_BUTTON_ID)
-                .attr("src",wnw.list.assetPath('next.png'))
+                .attr("src",wnw.bord.assetPath('next.png'))
                 .click(function(){
                     var _id = $("#" + gZoomImgId).attr("next");
                     if(_id == gImgList.length){
@@ -466,7 +466,7 @@ if (!wnw.list) wnw.list = {};
         $("body").append(
             $("<img/>")
                 .attr("id",PREV_BUTTON_ID)
-                .attr("src",wnw.list.assetPath('prev.png'))
+                .attr("src",wnw.bord.assetPath('prev.png'))
                 .click(function(){
                     var _id = $("#" + gZoomImgId).attr("prev");
                     if(_id == -1){
@@ -510,7 +510,7 @@ if (!wnw.list) wnw.list = {};
         //整頓ボタン
         $("#bord").append(
             $("<img/>")
-                .attr("src", wnw.list.assetPath(SEITON_BTN_IMAGE))
+                .attr("src", wnw.bord.assetPath(SEITON_BTN_IMAGE))
                 .css({
                     "position":"absolute" ,
                     "top":SEITON_TOP ,
@@ -521,10 +521,10 @@ if (!wnw.list) wnw.list = {};
     };
 
     //publicフィールド・関数定義
-    wnw.list.display = display;
-    wnw.list.addImage = addImage;
-    wnw.list.reset = reset;
-    wnw.list.assetPath = assetPath;
+    wnw.bord.display = display;
+    wnw.bord.addImage = addImage;
+    wnw.bord.reset = reset;
+    wnw.bord.assetPath = assetPath;
 })();
 
 
