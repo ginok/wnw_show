@@ -59,15 +59,72 @@ if (!wnw.list) wnw.list = {};
                 $("#slide").show();
                 //指定のNoにスライドする関数をアニメーション時間0秒で実行して、
                 //一瞬にしてそのスライドを表示させる
-                console.log(jCarousel.maxNum() - $(this).attr("no") - 1);
-                slide(jCarousel.maxNum() - $(this).attr("no") - 1,0);
+                console.log(jC.maxNum() - $(this).attr("no") - 1);
+                slide(jC.maxNum() - $(this).attr("no") - 1,0);
                 //ここでリサイズしないと、liのwidthが100になってしまい表示がおかしくなる
-                jCarousel.resize();
+                jC.resize();
             })
         ;
-        $("#bord_ul").prepend($("<li/>").addClass("cheki").append(_cheki));
+        $("#bord_ul").prepend(
+            $("<li/>")
+                .addClass("cheki")
+                .append(_cheki));
 
     };
+    function add_msg_from_html(msg){
+        var i = jC.maxNum();
+        //リストに追加
+        add_msg(msg,i);
+
+        //カルーセルに追加
+        jC.add($("<li/>")
+               .append(make_large_cheki(msg,i))
+               .css({"float":"left",width:jC.sel.width+"px",listStyle:"none",padding:0,margin:0,color:"#000"})
+              );
+
+    };
+
+    function make_large_cheki(msg,i){
+            var _large_img = $("<img/>")
+           .attr("src",msg["large"])
+           .attr("no",i)
+           .hide()
+           .load(function(){
+               $(this).css({"height":"100%","width":"100%"});
+               $(this).show();
+               console.log("loaded large_image: "+ $(this).attr("src") +  "  width=" +$(this).naturalWidth());
+               //画像のロードが完了したら親のdomのサイズを調整
+               $("#large_img" + $(this).attr("no")).css({
+                   "position":"relative",
+                   "width":$(this).naturalWidth(),
+                   "left":$(window).width()/2 - $(this).naturalWidth()/2
+               });
+               $("#large_photo" + $(this).attr("no")).css({
+                   "width":$(this).naturalWidth(),
+                   "height":$(this).naturalHeight()
+               });
+           });
+
+       var _large_cheki = $("<div />")
+           .addClass("large_cheki")
+           .attr("id","large_img"+ i)
+           .attr("small_id","img"+i)
+           .attr("no", i)
+           .attr("next", i+1)
+           .attr("prev", i-1)
+           .append($("<figure/>")
+                   .addClass("large_photo")
+                   .attr("id","large_photo" + i)
+                   .append(_large_img)
+                       )
+           .append(
+               $("<div/>")
+                   .addClass("large_moji")
+                   .html(msg["moji"])
+           )
+       ;
+       return _large_cheki;
+   }
 
     function make_list(msgList){
         //背景
@@ -89,56 +146,18 @@ if (!wnw.list) wnw.list = {};
        );
 
        //カルーセル
-       var jc = $("<ul/>").addClass("jCarousel").attr("id","jCarousel");
+       var jc = $("<ul/>").addClass("jC").attr("id","jC");
        for(var i = 0 ; i < msgList.length; i = i + 1){
            var msg = msgList[i];
-           var _large_img = $("<img/>")
-               .attr("src",msg["large"])
-               .attr("no",i)
-               .hide()
-               .load(function(){
-                   $(this).css({"height":"100%","width":"100%"});
-                   $(this).show();
-                   console.log("loaded large_image: "+ $(this).attr("src") +  "  width=" +$(this).naturalWidth());
-                   //画像のロードが完了したら親のdomのサイズを調整
-                   $("#large_img" + $(this).attr("no")).css({
-                       "position":"relative",
-                       "width":$(this).naturalWidth(),
-                       "left":$(window).width()/2 - $(this).naturalWidth()/2
-                   });
-                   $("#large_photo" + $(this).attr("no")).css({
-                       "width":$(this).naturalWidth(),
-                       "height":$(this).naturalHeight()
-                   });
-               });
-
-
-           var _large_cheki = $("<div />")
-               .addClass("large_cheki")
-               .attr("id","large_img"+ i)
-               .attr("small_id","img"+i)
-               .attr("no", i)
-               .attr("next", i+1)
-               .attr("prev", i-1)
-               .append($("<figure/>")
-                       .addClass("large_photo")
-                       .attr("id","large_photo" + i)
-                       .append(_large_img)
-                       )
-               .append(
-                   $("<div/>")
-                       .addClass("large_moji")
-                       .html(msg["moji"])
-               )
-            ;
-
-            jc.prepend($("<li/>").append(_large_cheki)
+            jc.prepend(
+                $("<li/>")
+                    .append(make_large_cheki(msg,i))
+                    .css({"float":"left",width:jC.sel.width+"px",listStyle:"none",padding:0,margin:0,color:"#000"})
             );
         }
        $("#slide").append(jc);
        //カルーセルの初期化。先に<li>要素ができている必要があるため、このタイミング
-       jCarousel.ini();
-       jCarousel.set();
+       jC.set();
        //ここでhide()を指定して、その後透明を解除
        $("#slide").hide().css({"opacity":1});
 
@@ -148,8 +167,8 @@ if (!wnw.list) wnw.list = {};
            .addClass("next")
            .attr("id","next")
            .click(function(){
-               _num= jCarousel.currentNum();
-               slide((_num + 1 ) % jCarousel.maxNum(),250);
+               _num= jC.currentNum();
+               slide((_num + 1 ) % jC.maxNum(),250);
            });
        $("#slide").append(nextButton);
 
@@ -158,8 +177,8 @@ if (!wnw.list) wnw.list = {};
            .addClass("prev")
            .attr("id","prev")
            .click(function(){
-               _num=jCarousel.currentNum();
-               slide((_num - 1 + jCarousel.maxNum() ) % jCarousel.maxNum(),250);
+               _num=jC.currentNum();
+               slide((_num - 1 + jC.maxNum() ) % jC.maxNum(),250);
            });
        $("#slide").append(prevButton);
 
@@ -183,13 +202,14 @@ if (!wnw.list) wnw.list = {};
 
    }
     function slide(no,speed){
-        jCarousel.slide(no,speed);
-        if(no==0){
+        console.log("no:" + no);
+        jC.slide(no,speed);
+        if(no == 0){
             $("#prev").hide();
         }else{
             $("#prev").show();
         }
-        if(no== jCarousel.maxNum()-1){
+        if(no == jC.maxNum()-1){
             $("#next").hide();
         }else{
             $("#next").show();
@@ -198,5 +218,181 @@ if (!wnw.list) wnw.list = {};
 
     //publicフィールド・関数定義
     wnw.list.display = display;
-    wnw.list.add_msg = add_msg;
+    wnw.list.add_msg_from_html = add_msg_from_html;
 })();
+
+
+
+var jC={ua:"pc",
+        num:0,
+        target:0,
+        wrapper:null,
+        sel:{width:0,max:0,left:0,current:0,startX:0,endX:0,auto:0},
+        activeBool:false,
+        active:0
+       };
+
+jC.set=function(){
+    var ua=navigator.userAgent;
+    if(ua.indexOf("iPhone")>-1||ua.indexOf("iPad")>-1||ua.indexOf("iPod")>-1||ua.indexOf("Android")>-1){
+        jC.ua="mobile";
+    }else{
+        jC.ua="pc";
+    }
+    $(window).keydown(function(e){
+        if(e.keyCode==39){ jC.next(); }
+        if(e.keyCode==37){ jC.prev(); }
+    });
+    $(window).bind("orientationchange",function(){jC.resize();});
+    $(window).resize(function(){jC.resize();});
+
+
+    jC.target=$("#jC");
+    jC.sel.width=jC.target.width();
+    jC.sel.max=jC.target.find("li").length;
+    jC.target.wrap('<div class="jCWrapper"></div>');
+    $(".jCWrapper")
+        .append(
+            $("<div>")
+                .attr("id","jC-counter-l")
+                .css({"position":"fixed","left":"90%","top":"0%"}))
+        .append(
+            $("<div>")
+                .attr("id","jC-counter-c")
+                .css({"position":"fixed","left":"93%","top":"0%"})
+                .html("/")
+        )
+        .append(
+            $("<div>")
+                .attr("id","jC-counter-r")
+                .css({"position":"fixed","left":"96%","top":"0%"}))
+        .css({overflow:"hidden",width:"100%"});
+    jC.target.css({
+        display:"inline-table",
+        minHeight:"1%",
+        width:"900000px",
+        listStyle:"none",
+        padding:0,
+        margin:0,
+        backgroundColor:"transparent"
+    });
+
+    if(jC.ua=="mobile"){
+        jC.target.bind("touchstart",function(){
+            jC.sel.startX=event.touches[0].pageX;
+            jC.sel.startY=event.touches[0].pageY;
+            jC.activeBool=true;
+        });
+        $(window).bind("touchmove",function(){
+            if(jC.activeBool){
+                jC.sel.endX=event.touches[0].pageX;
+                jC.sel.endY=event.touches[0].pageY;
+                var offsetX=-jC.sel.startX+jC.sel.endX;
+                var offsetY=-jC.sel.startY+jC.sel.endY;
+                if(offsetX/offsetY>0.5||offsetX/offsetY<-0.5){
+                    event.preventDefault();
+                    jC.target.css({marginLeft:jC.sel.left+offsetX+"px"});
+                }else jC.activeBool=false;
+            }
+        });
+        $(window).bind("touchend",function(){
+            if(jC.activeBool){
+                jC.activeBool=false;
+                var offsetX=-jC.sel.startX+jC.sel.endX;
+                var eventArea=jC.sel.width/5;
+                var carouselNum=jC.sel.current;
+                var carouselMax=jC.sel.max;
+                if(offsetX>eventArea&&carouselNum>0)carouselNum--;
+                else if(offsetX<-eventArea&&carouselNum<carouselMax-1)carouselNum++;
+                jC.slide(carouselNum,200);
+            }
+        });
+    }
+    if(jC.ua=="pc"){
+        jC.target.bind("mousedown",function(event){
+            jC.sel.startX=event.pageX;
+            jC.activeBool=true;
+            return false;
+        });
+        $(window).bind("mousemove",function(event){
+            if(jC.activeBool){
+                jC.sel.endX=event.pageX;
+                var offset=-jC.sel.startX+jC.sel.endX;
+
+                jC.target.css(
+                    {marginLeft:jC.sel.left+offset+"px"});
+            }});
+        $(window).bind("mouseup",function(event){
+            if(jC.activeBool){
+                jC.activeBool=false;
+                jC.sel.endX=event.pageX;
+                var offset=-jC.sel.startX+jC.sel.endX;
+                var eventArea=jC.sel.width/5;
+                var carouselNum=jC.sel.current;
+                var carouselMax=jC.sel.max;
+                if(offset>eventArea&&carouselNum>0)carouselNum--;
+                else if(offset<-eventArea&&
+                        carouselNum<carouselMax-1)carouselNum++;
+                jC.slide(carouselNum,250);
+            }
+        });
+    }
+    jC.num++;
+};
+
+jC.next=function(){
+    var carouselNum=jC.sel.current;
+    if(carouselNum<jC.sel.max-1){
+        carouselNum++;
+        jC.slide(carouselNum,250);
+    }
+};
+
+jC.prev=function(){
+    var carouselNum=jC.sel.current;
+    if(carouselNum>0){
+        carouselNum--;
+        jC.slide(carouselNum,250);
+    }
+};
+
+jC.slide=function(carouselNum,speed){
+    jC.activeBool=false;
+    var margin=-carouselNum*jC.sel.width;
+    jC.target.animate({marginLeft:margin+"px"},speed,"easeCarousel",function(){});
+    jC.sel.left=margin;
+    jC.sel.current=carouselNum;
+    $("#jC-counter-l").html(carouselNum + 1 );
+    $("#jC-counter-r").html(jC.maxNum());
+};
+
+jC.currentNum=function(){
+    return jC.sel.current;
+};
+jC.currentPosi=function(){
+    return jC.sel.max - jC.sel.current - 1;
+};
+jC.maxNum=function(){
+    return jC.sel.max;
+};
+jC.add=function(liJq){
+    jC.target.prepend(liJq);
+    jC.resize();
+    jC.sel.max++;
+    $("#jC-counter-r").html(jC.maxNum());
+};
+jC.resize=function(){
+    $(".jC").each(function(){
+        var tWidth=$(".jCWrapper").width();
+        jC.sel.width=tWidth;
+        var margin=-jC.sel.current*jC.sel.width;
+        jC.sel.left=margin;
+        $(this).find("li").css({width:tWidth+"px"});
+        $(this).css({marginLeft:margin+"px"});
+    });
+};
+jQuery.extend(
+    jQuery.easing,{
+        easeCarousel:function(x,t,b,c,d){
+            return c*((t=t/d-1)*t*t+1)+b;
+        }});

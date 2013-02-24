@@ -8,7 +8,6 @@
     <script type=text/javascript src="js/jquery-1.9.0.min.js"></script>
     <script type=text/javascript src="js/jquery-ui-1.8.18.custom.min.js"></script>
     <script type=text/javascript src="../vendor/assets/javascripts/wnw_show/matrix.js.erb"></script>
-    <script src="js/jCarousel.min.js" type="application/x-javascript" charset="utf-8"></script>
     <script type=text/javascript>
     function init(){
       //画像のリスト
@@ -27,6 +26,6 @@
     </script>
   </head>
   <body onLoad=init()>
-    <button onclick="wnw.list.add_msg({ 'small' : 'image/s-7.jpg', 'large' : 'image/l-7.jpg', 'moji' : '7追加した画像！'})")>add msg</button>
+    <button style="{position:fixed ; top:90% ; left:10%;}"onclick="wnw.list.add_msg_from_html({ 'small' : 'image/s-7.jpg', 'large' : 'image/l-7.jpg', 'moji' : '7追加した画像！'},7)">add msg</button>
   </body>
 </html>
